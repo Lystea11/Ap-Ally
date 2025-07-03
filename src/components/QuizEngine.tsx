@@ -16,6 +16,25 @@ export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
+  if (!quiz?.questions?.length) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Quiz Not Available</CardTitle>
+                <CardDescription>
+                    We couldn&apos;t generate a quiz for you at this moment. You can proceed without it.
+                </CardDescription>
+            </CardHeader>
+            <CardFooter>
+                <Button onClick={() => onSubmit("No quiz taken.")} size="lg">
+                    Generate Roadmap Anyway
+                </Button>
+            </CardFooter>
+        </Card>
+    );
+  }
+
+
   const handleAnswerChange = (questionId: number, value: string) => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
@@ -38,6 +57,11 @@ export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === quiz.questions.length - 1;
+
+  if (!currentQuestion) {
+    // This case should not be reached if the check above is in place, but serves as a safeguard.
+    return null;
+  }
 
   return (
     <div className="space-y-6">
