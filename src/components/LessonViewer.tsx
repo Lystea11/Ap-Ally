@@ -18,9 +18,14 @@ interface LessonViewerProps {
   nextLesson: Lesson | null;
   onQuizComplete: (score: { correct: number, total: number }) => void;
   onRetryQuiz: () => void;
+  quizResult: { correct: number, total: number } | null;
 }
 
-export function LessonViewer({ lesson, content, onToggleComplete, nextLesson, onQuizComplete, onRetryQuiz }: LessonViewerProps) {
+export function LessonViewer({ lesson, content, onToggleComplete, nextLesson, onQuizComplete, onRetryQuiz, quizResult }: LessonViewerProps) {
+  const hasPracticeQuestions = content.practiceQuestions && content.practiceQuestions.length > 0;
+  // A lesson can be completed if it has no questions, or if the quiz has been passed.
+  const canComplete = !hasPracticeQuestions || (quizResult ? quizResult.correct >= 4 : false);
+
   return (
     <div className="space-y-8">
       <Card>
@@ -36,7 +41,7 @@ export function LessonViewer({ lesson, content, onToggleComplete, nextLesson, on
             </div>
         </CardContent>
         <CardFooter>
-          <Button onClick={onToggleComplete} size="lg">
+          <Button onClick={onToggleComplete} size="lg" disabled={!lesson.completed && !canComplete}>
             {lesson.completed ? (
               <>
                 <Circle className="mr-2 h-5 w-5" />

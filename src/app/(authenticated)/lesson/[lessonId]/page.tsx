@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function LessonPage({ params }: { params: { lessonId: string } }) {
   const { lessonId } = params;
-  const { roadmap, updateLessonProgress } = useStudy();
+  const { roadmap, updateLessonProgress, setLessonMastery } = useStudy();
   const router = useRouter();
   const { toast } = useToast();
   
@@ -83,6 +83,33 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
     fetchLessonContent();
   };
 
+  const handleMarkAsComplete = () => {
+    if (lesson.completed) {
+      updateLessonProgress(lesson.id, false);
+      setLessonMastery(lesson.id, false); // Reset mastery
+      setQuizResult(null); // Reset quiz result for this session
+      return;
+    }
+
+    const hasPracticeQuestions = lessonContent.practiceQuestions && lessonContent.practiceQuestions.length > 0;
+    if (hasPracticeQuestions && (!quizResult || quizResult.correct < 4)) {
+      toast({
+        title: "Quiz Not Passed",
+        description: `You need to score at least 4/${lessonContent.practiceQuestions.length} to complete the lesson.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateLessonProgress(lesson.id, true);
+    
+    if (nextLesson) {
+      router.push(`/lesson/${nextLesson.id}`);
+    } else {
+      router.push('/dashboard');
+    }
+  };
+
 
   if (loading) {
     return (
@@ -113,31 +140,6 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
     );
   }
 
-  const handleMarkAsComplete = () => {
-    if (lesson.completed) {
-      updateLessonProgress(lesson.id, false);
-      return;
-    }
-
-    const hasPracticeQuestions = lessonContent.practiceQuestions && lessonContent.practiceQuestions.length > 0;
-    if (hasPracticeQuestions && (!quizResult || quizResult.correct < 4)) {
-      toast({
-        title: "Quiz Not Passed",
-        description: `You need to score at least 4/${lessonContent.practiceQuestions.length} to complete the lesson.`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    updateLessonProgress(lesson.id, true);
-    
-    if (nextLesson) {
-      router.push(`/lesson/${nextLesson.id}`);
-    } else {
-      router.push('/dashboard');
-    }
-  };
-
   return (
     <div className="container mx-auto py-8">
       <div className="mb-8">
@@ -155,6 +157,7 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
         nextLesson={nextLesson}
         onQuizComplete={handleQuizComplete}
         onRetryQuiz={handleRetryQuiz}
+        quizResult={quizResult}
       />
     </div>
   );
