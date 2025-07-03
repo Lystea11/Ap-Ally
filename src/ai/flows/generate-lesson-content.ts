@@ -37,7 +37,8 @@ const prompt = ai.definePrompt({
 
   Topic: {{{topic}}}
 
-  Create lesson content that thoroughly covers the topic. Include explanations, examples, and relevant details.
+  Create lesson content that thoroughly covers the topic. Use Markdown for formatting (headings, lists, bold text, etc.). For mathematical equations, use LaTeX syntax (e.g., $E=mc^2$ for inline and $$...$$ for block equations).
+  Include explanations, examples, and relevant details.
   Also, create a few practice questions that will help the student test their understanding of the material.
   Return the lesson content and practice questions in the output.  Also, add one short, one-sentence summary of what you have generated to the 'progress' field in the output.
   `,

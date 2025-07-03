@@ -22,6 +22,12 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap"
           rel="stylesheet"
         />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css"
+          integrity="sha384-KiWOvVjnN8qwKMvhEkhVNVcOkH4PkLoJW3OgnKAvcNhtO6CMsIJek5G3L+B+ZhqD"
+          crossOrigin="anonymous"
+        />
       </head>
       <body className="font-body antialiased" suppressHydrationWarning>
         <AppProviders>

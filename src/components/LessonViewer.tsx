@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle, Circle, BrainCircuit } from "lucide-react";
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 interface LessonViewerProps {
   lesson: Lesson;
@@ -23,9 +26,9 @@ export function LessonViewer({ lesson, content, onToggleComplete }: LessonViewer
         </CardHeader>
         <CardContent>
             <div className="prose prose-lg max-w-none dark:prose-invert">
-                {content.content.split('\n').map((paragraph, index) => (
-                    <p key={index}>{paragraph}</p>
-                ))}
+                <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                    {content.content}
+                </ReactMarkdown>
             </div>
         </CardContent>
         <CardFooter>
