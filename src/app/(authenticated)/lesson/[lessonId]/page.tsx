@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useStudy } from "@/hooks/useStudy";
@@ -25,6 +25,7 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quizResult, setQuizResult] = useState<{ correct: number, total: number } | null>(null);
+  const fetchedLessonIdRef = useRef<string | null>(null);
 
   const { lesson, nextLesson } = useMemo(() => {
     if (!roadmap) return { lesson: null, nextLesson: null };
@@ -62,14 +63,17 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
   };
 
   useEffect(() => {
-    if (lesson) {
+    // Only fetch content if the lesson ID has changed since the last fetch.
+    // This prevents re-fetching when lesson metadata (like mastery) changes.
+    if (lesson && fetchedLessonIdRef.current !== lessonId) {
+      fetchedLessonIdRef.current = lessonId;
       fetchLessonContent();
-    } else if (roadmap) { // roadmap has loaded but no lesson found
+    } else if (roadmap && !lesson) { // roadmap has loaded but no lesson found
       setLoading(false);
       setError("Lesson not found.");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lesson, roadmap]);
+  }, [lesson, roadmap, lessonId]);
 
   const handleQuizComplete = (result: { correct: number, total: number }) => {
     setQuizResult(result);
