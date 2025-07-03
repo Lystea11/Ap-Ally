@@ -5,7 +5,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useStudy } from "@/hooks/useStudy";
-import { generateLessonContent } from "@/ai/flows/generate-lesson-content";
+import { getLessonContentAPI } from "@/lib/api-client";
 import type { GenerateLessonContentOutput } from "@/ai/flows/generate-lesson-content";
 import { LessonViewer } from "@/components/LessonViewer";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -52,7 +52,7 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
     setError(null);
     setQuizResult(null); // Reset quiz results when fetching new content
     try {
-      const content = await generateLessonContent({ topic: lesson.title });
+      const content = await getLessonContentAPI(lesson.id);
       setLessonContent(content);
     } catch (err) {
       setError("Failed to load lesson content. Please try again later.");
@@ -63,16 +63,13 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
   };
 
   useEffect(() => {
-    // Only fetch content if the lesson ID has changed since the last fetch.
-    // This prevents re-fetching when lesson metadata (like mastery) changes.
     if (lesson && fetchedLessonIdRef.current !== lessonId) {
       fetchedLessonIdRef.current = lessonId;
       fetchLessonContent();
-    } else if (roadmap && !lesson) { // roadmap has loaded but no lesson found
+    } else if (roadmap && !lesson) {
       setLoading(false);
       setError("Lesson not found.");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lesson, roadmap, lessonId]);
 
   const handleQuizComplete = (result: { correct: number, total: number }) => {
@@ -83,11 +80,13 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
     fetchLessonContent();
   };
 
-  const handleMarkAsComplete = () => {
+  const handleMarkAsComplete = async () => {
+    if (!lesson || !lessonContent) return;
+
     if (lesson.completed) {
-      updateLessonProgress(lesson.id, false);
-      setLessonMastery(lesson.id, false); // Reset mastery
-      setQuizResult(null); // Reset quiz result for this session
+      await updateLessonProgress(lesson.id, false);
+      await setLessonMastery(lesson.id, false);
+      setQuizResult(null);
       return;
     }
 
@@ -101,7 +100,7 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
       return;
     }
 
-    updateLessonProgress(lesson.id, true);
+    await updateLessonProgress(lesson.id, true);
     
     if (nextLesson) {
       router.push(`/lesson/${nextLesson.id}`);

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -94,13 +95,13 @@ export default function OnboardingPage() {
     
     try {
       const result = await generateRoadmap({ ...onboardingData, quizResults: answers });
-      setRoadmap(result.roadmap);
+      await setRoadmap(result.roadmap);
       router.push("/dashboard");
     } catch (error) {
-      console.error("Failed to generate roadmap:", error);
+      console.error("Failed to generate or save roadmap:", error);
       toast({
         title: "Error",
-        description: "Could not generate your roadmap. Please try again.",
+        description: "Could not create your roadmap. Please try again.",
         variant: "destructive",
       });
       setStep(1);

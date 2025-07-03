@@ -1,17 +1,29 @@
+
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export function LandingPageClient() {
   const { login, loading } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
 
-  const handleGetStarted = () => {
-    login();
-    router.push("/onboarding");
+  const handleGetStarted = async () => {
+    try {
+      await login();
+      router.push("/onboarding");
+    } catch (error) {
+      console.error("Login failed", error);
+      toast({
+        title: "Login Failed",
+        description: "There was a problem signing you in. Please try again.",
+        variant: "destructive"
+      })
+    }
   }
 
   return (

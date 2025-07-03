@@ -1,24 +1,22 @@
+
 "use client";
 
 import React, { createContext, useState, useEffect, ReactNode } from "react";
-import { User } from "@/lib/types";
+import { User, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
+import { auth, googleProvider } from "@/lib/firebase-client";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useRouter } from "next/navigation";
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: () => void;
-  logout: () => void;
+  login: () => Promise<void>;
+  logout: () => Promise<void>;
   loading: boolean;
+  getToken: () => Promise<string | null>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const mockUser: User = {
-  id: "1",
-  name: "Alex Student",
-  email: "alex.student@example.com",
-};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -26,45 +24,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
-    try {
-      const storedAuth = localStorage.getItem("isAuthenticated");
-      if (storedAuth === "true") {
-        setUser(mockUser);
-      }
-    } catch (error) {
-      console.error("Could not access localStorage", error);
-    } finally {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
       setLoading(false);
-    }
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const login = () => {
+  const login = async () => {
     setLoading(true);
-    setUser(mockUser);
     try {
-      localStorage.setItem("isAuthenticated", "true");
+      await signInWithPopup(auth, googleProvider);
     } catch (error) {
-        console.error("Could not access localStorage", error);
+      console.error("Firebase authentication failed", error);
+      setLoading(false);
+      throw error;
     }
-    setLoading(false);
-    router.push("/dashboard");
   };
 
-  const logout = () => {
+  const logout = async () => {
     setLoading(true);
-    setUser(null);
     try {
-      localStorage.removeItem("isAuthenticated");
+      await signOut(auth);
+      router.push("/");
     } catch (error) {
-      console.error("Could not access localStorage", error);
+      console.error("Firebase logout failed", error);
+    } finally {
+        setLoading(false);
     }
-    setLoading(false);
-    router.push("/");
   };
+
+  const getToken = async (): Promise<string | null> => {
+    if (!user) return null;
+    return user.getIdToken();
+  };
+  
+  if (loading) {
+     return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <LoadingSpinner className="h-12 w-12 text-primary" />
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated: !!user, login, logout, loading }}
+      value={{ user, isAuthenticated: !!user, login, logout, loading, getToken }}
     >
       {children}
     </AuthContext.Provider>

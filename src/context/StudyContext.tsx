@@ -1,15 +1,19 @@
 
 "use client";
 
-import React, { createContext, useState, ReactNode, useEffect } from "react";
-import { Roadmap, Lesson } from "@/lib/types";
+import React, { createContext, useState, ReactNode, useEffect, useCallback } from "react";
+import { Roadmap } from "@/lib/types";
+import { getRoadmapAPI, createRoadmapAPI, updateProgressAPI } from "@/lib/api-client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface StudyContextType {
   roadmap: Roadmap | null;
-  setRoadmap: (roadmap: Roadmap) => void;
-  updateLessonProgress: (lessonId: string, completed: boolean) => void;
-  setLessonMastery: (lessonId: string, achieved: boolean) => void;
+  setRoadmap: (roadmap: Roadmap) => Promise<void>;
+  updateLessonProgress: (lessonId: string, completed: boolean) => Promise<void>;
+  setLessonMastery: (lessonId: string, achieved: boolean) => Promise<void>;
   progress: number;
+  loading: boolean;
+  refetchRoadmap: () => Promise<void>;
 }
 
 export const StudyContext = createContext<StudyContextType | undefined>(
@@ -19,17 +23,30 @@ export const StudyContext = createContext<StudyContextType | undefined>(
 export const StudyProvider = ({ children }: { children: ReactNode }) => {
   const [roadmap, setRoadmapState] = useState<Roadmap | null>(null);
   const [progress, setProgress] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const { isAuthenticated } = useAuth();
+
+  const fetchRoadmap = useCallback(async () => {
+    if (!isAuthenticated) {
+        setRoadmapState(null);
+        setLoading(false);
+        return;
+    };
+    setLoading(true);
+    try {
+      const data = await getRoadmapAPI();
+      setRoadmapState(data);
+    } catch (error) {
+      console.error("Failed to fetch roadmap:", error);
+      setRoadmapState(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    try {
-      const savedRoadmap = localStorage.getItem("roadmap");
-      if (savedRoadmap) {
-        setRoadmapState(JSON.parse(savedRoadmap));
-      }
-    } catch (error) {
-      console.error("Could not access localStorage", error);
-    }
-  }, []);
+    fetchRoadmap();
+  }, [fetchRoadmap]);
 
   useEffect(() => {
     if (roadmap) {
@@ -40,67 +57,64 @@ export const StudyProvider = ({ children }: { children: ReactNode }) => {
           ? (completedLessons.length / allLessons.length) * 100
           : 0;
       setProgress(newProgress);
-      try {
-        localStorage.setItem("roadmap", JSON.stringify(roadmap));
-      } catch (error) {
-        console.error("Could not access localStorage", error);
-      }
+    } else {
+        setProgress(0);
     }
   }, [roadmap]);
 
-  const setRoadmap = (newRoadmap: Roadmap) => {
-    const roadmapWithIds = {
-        ...newRoadmap,
-        units: newRoadmap.units.map((unit, unitIndex) => ({
-            ...unit,
-            id: `unit-${unitIndex}`,
-            lessons: unit.lessons.map((lesson, lessonIndex) => ({
-                ...lesson,
-                id: `unit-${unitIndex}-lesson-${lessonIndex}`,
-                completed: false,
-                mastery: false,
-            })),
-        })),
-    };
-    setRoadmapState(roadmapWithIds);
+  const setRoadmap = async (newRoadmap: Roadmap) => {
+    setLoading(true);
+    await createRoadmapAPI(newRoadmap);
+    await fetchRoadmap();
   };
 
-  const updateLessonProgress = (lessonId: string, completed: boolean) => {
-    setRoadmapState((prevRoadmap) => {
-      if (!prevRoadmap) return null;
-      const newRoadmap = {
-        ...prevRoadmap,
-        units: prevRoadmap.units.map((unit) => ({
-          ...unit,
-          lessons: unit.lessons.map((lesson) =>
-            lesson.id === lessonId ? { ...lesson, completed } : lesson
-          ),
-        })),
-      };
-      return newRoadmap;
+  const updateLessonProgress = async (lessonId: string, completed: boolean) => {
+    setRoadmapState((prev) => {
+        if (!prev) return null;
+        return {
+            ...prev,
+            units: prev.units.map(u => ({
+                ...u,
+                lessons: u.lessons.map(l => l.id === lessonId ? {...l, completed} : l)
+            }))
+        };
     });
+    try {
+        await updateProgressAPI(lessonId, completed);
+    } catch (error) {
+        console.error("Failed to update progress:", error);
+        await fetchRoadmap();
+    }
   };
 
-  const setLessonMastery = (lessonId: string, achieved: boolean) => {
-    setRoadmapState((prevRoadmap) => {
-      if (!prevRoadmap) return null;
-      const newRoadmap = {
-        ...prevRoadmap,
-        units: prevRoadmap.units.map((unit) => ({
-          ...unit,
-          lessons: unit.lessons.map((lesson) =>
-            lesson.id === lessonId ? { ...lesson, mastery: achieved } : lesson
-          ),
-        })),
-      };
-      return newRoadmap;
+  const setLessonMastery = async (lessonId: string, achieved: boolean) => {
+    setRoadmapState((prev) => {
+        if (!prev) return null;
+        const currentLesson = prev.units.flatMap(u => u.lessons).find(l => l.id === lessonId);
+        return {
+            ...prev,
+            units: prev.units.map(u => ({
+                ...u,
+                lessons: u.lessons.map(l => l.id === lessonId ? {...l, mastery: achieved} : l)
+            }))
+        };
     });
+
+    try {
+        const currentLesson = roadmap?.units.flatMap(u => u.lessons).find(l => l.id === lessonId);
+        if (currentLesson) {
+          await updateProgressAPI(lessonId, currentLesson.completed, achieved);
+        }
+    } catch (error) {
+        console.error("Failed to set mastery:", error);
+        await fetchRoadmap();
+    }
   };
 
 
   return (
     <StudyContext.Provider
-      value={{ roadmap, setRoadmap, updateLessonProgress, setLessonMastery, progress }}
+      value={{ roadmap, setRoadmap, updateLessonProgress, setLessonMastery, progress, loading, refetchRoadmap: fetchRoadmap }}
     >
       {children}
     </StudyContext.Provider>
