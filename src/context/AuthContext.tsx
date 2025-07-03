@@ -1,10 +1,8 @@
-
 "use client";
 
 import React, { createContext, useState, useEffect, ReactNode } from "react";
 import { User, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase-client";
-import { useRouter } from "next/navigation";
 
 interface AuthContextType {
   user: User | null;
@@ -20,7 +18,6 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -45,7 +42,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       await signOut(auth);
-      router.push("/");
+      // The redirect is now handled in the component that calls logout.
     } catch (error) {
       console.error("Firebase logout failed", error);
     }
