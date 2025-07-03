@@ -1,29 +1,46 @@
 
 "use client";
 
+import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 export function LandingPageClient() {
-  const { login, loading } = useAuth();
+  const { login, loading, isAuthenticated } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [isAuthenticated, loading, router]);
+
+
   const handleGetStarted = async () => {
     try {
+      // The login function initiates a redirect, so we don't need to do anything after.
       await login();
-      router.push("/onboarding");
     } catch (error) {
       console.error("Login failed", error);
       toast({
         title: "Login Failed",
         description: "There was a problem signing you in. Please try again.",
-        variant: "destructive"
-      })
+        variant: "destructive",
+      });
     }
+  };
+
+  if (loading || isAuthenticated) {
+     return (
+        <div className="flex h-11 items-center justify-center">
+            <LoadingSpinner />
+        </div>
+    )
   }
 
   return (

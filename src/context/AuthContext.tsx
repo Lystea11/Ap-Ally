@@ -2,9 +2,8 @@
 "use client";
 
 import React, { createContext, useState, useEffect, ReactNode } from "react";
-import { User, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
+import { User, onAuthStateChanged, signInWithRedirect, signOut, getRedirectResult } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase-client";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useRouter } from "next/navigation";
 
 interface AuthContextType {
@@ -29,13 +28,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     });
 
+    getRedirectResult(auth)
+    .then((result) => {
+      if (result?.user) {
+        // onAuthStateChanged will handle setting the user and loading state
+      } else {
+        // If there's no redirect result, we might still be loading the initial state
+        // onAuthStateChanged will handle this.
+      }
+    })
+    .catch((error) => {
+      console.error("Redirect login failed:", error);
+      setLoading(false);
+    });
+
     return () => unsubscribe();
   }, []);
 
   const login = async () => {
     setLoading(true);
     try {
-      await signInWithPopup(auth, googleProvider);
+      await signInWithRedirect(auth, googleProvider);
     } catch (error) {
       console.error("Firebase authentication failed", error);
       setLoading(false);
@@ -51,7 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("Firebase logout failed", error);
     } finally {
-        setLoading(false);
+      // onAuthStateChanged will set user to null and loading to false
     }
   };
 
@@ -59,14 +72,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return null;
     return user.getIdToken();
   };
-  
-  if (loading) {
-     return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <LoadingSpinner className="h-12 w-12 text-primary" />
-      </div>
-    );
-  }
 
   return (
     <AuthContext.Provider
