@@ -63,11 +63,21 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center gap-3">
-          <BrainCircuit className="h-7 w-7 text-primary" />
-          <CardTitle className="font-headline text-2xl">Practice Quiz</CardTitle>
+        <div className="flex justify-between items-start">
+          <div>
+            <div className="flex items-center gap-3">
+              <BrainCircuit className="h-7 w-7 text-primary" />
+              <CardTitle className="font-headline text-2xl">Practice Quiz</CardTitle>
+            </div>
+            <CardDescription>Score at least 4/{questions.length} to pass. Get a perfect score to earn a mastery badge.</CardDescription>
+          </div>
+          {resultStats && !resultStats.isMastered && (
+            <Button onClick={handleRetry} variant="outline">
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Try Again
+            </Button>
+          )}
         </div>
-        <CardDescription>Score at least 4/{questions.length} to pass. Get a perfect score to earn a mastery badge.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
         {resultStats && (
@@ -100,12 +110,6 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
                           : " Review the explanations below and try again."}
                     </AlertDescription>
                 </Alert>
-                {!resultStats.isMastered && (
-                    <Button onClick={handleRetry}>
-                        <RefreshCw className="mr-2 h-4 w-4" />
-                        Try Again with New Questions
-                    </Button>
-                )}
             </div>
         )}
 
