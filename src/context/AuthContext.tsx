@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useState, useEffect, ReactNode } from "react";
-import { User, onAuthStateChanged, signInWithRedirect, signOut, getRedirectResult } from "firebase/auth";
+import { User, onAuthStateChanged, signInWithRedirect, signOut } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase-client";
 import { useRouter } from "next/navigation";
 
@@ -23,31 +23,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
+    // onAuthStateChanged handles the result of signInWithRedirect automatically and is the single source of truth.
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
 
-    getRedirectResult(auth)
-    .then((result) => {
-      if (result?.user) {
-        // onAuthStateChanged will handle setting the user and loading state
-      } else {
-        // If there's no redirect result, we might still be loading the initial state
-        // onAuthStateChanged will handle this.
-      }
-    })
-    .catch((error) => {
-      console.error("Redirect login failed:", error);
-      setLoading(false);
-    });
-
+    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
 
   const login = async () => {
     setLoading(true);
     try {
+      // The redirect will happen, and onAuthStateChanged will handle the result on the return page.
       await signInWithRedirect(auth, googleProvider);
     } catch (error) {
       console.error("Firebase authentication failed", error);
@@ -63,8 +52,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       router.push("/");
     } catch (error) {
       console.error("Firebase logout failed", error);
-    } finally {
-      // onAuthStateChanged will set user to null and loading to false
     }
   };
 
