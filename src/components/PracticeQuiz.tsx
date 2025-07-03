@@ -71,34 +71,42 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
       </CardHeader>
       <CardContent className="space-y-8">
         {resultStats && (
-            <Alert 
-              variant={resultStats.isPassed ? 'default' : 'destructive'} 
-              className={cn(
-                resultStats.isMastered && "border-green-500 bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200 dark:border-green-800",
-                resultStats.isPassed && !resultStats.isMastered && "border-primary/50 bg-primary/10 text-primary dark:bg-primary/20 dark:border-primary/60"
-              )}
-            >
-                {resultStats.isMastered ? (
-                  <Award className="h-4 w-4 !text-green-800 dark:!text-green-200" />
-                ) : resultStats.isPassed ? (
-                  <ThumbsUp className="h-4 w-4 text-primary" />
-                ) : null}
-                 <AlertTitle className="font-bold">
-                    {resultStats.isMastered
-                      ? "Mastery Achieved!"
-                      : resultStats.isPassed
-                      ? "Congratulations, You Passed!"
-                      : "Review Needed"}
-                </AlertTitle>
-                <AlertDescription>
-                    You scored {resultStats.correctCount} out of {resultStats.totalCount}. 
-                    {resultStats.isMastered
-                      ? " Great job! You've earned the mastery badge for this lesson."
-                      : resultStats.isPassed
-                      ? " You're ready to move on. Retake the quiz for a perfect score to earn the mastery badge!"
-                      : " Review the explanations below and try again."}
-                </AlertDescription>
-            </Alert>
+            <div className="space-y-4">
+                <Alert 
+                  variant={resultStats.isPassed ? 'default' : 'destructive'} 
+                  className={cn(
+                    resultStats.isMastered && "border-green-500 bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200 dark:border-green-800",
+                    resultStats.isPassed && !resultStats.isMastered && "border-primary/50 bg-primary/10 text-primary dark:bg-primary/20 dark:border-primary/60"
+                  )}
+                >
+                    {resultStats.isMastered ? (
+                      <Award className="h-4 w-4 !text-green-800 dark:!text-green-200" />
+                    ) : resultStats.isPassed ? (
+                      <ThumbsUp className="h-4 w-4 text-primary" />
+                    ) : null}
+                     <AlertTitle className="font-bold">
+                        {resultStats.isMastered
+                          ? "Mastery Achieved!"
+                          : resultStats.isPassed
+                          ? "Congratulations, You Passed!"
+                          : "Review Needed"}
+                    </AlertTitle>
+                    <AlertDescription>
+                        You scored {resultStats.correctCount} out of {resultStats.totalCount}. 
+                        {resultStats.isMastered
+                          ? " Great job! You've earned the mastery badge for this lesson."
+                          : resultStats.isPassed
+                          ? " You're ready to move on. Retake the quiz for a perfect score to earn the mastery badge!"
+                          : " Review the explanations below and try again."}
+                    </AlertDescription>
+                </Alert>
+                {!resultStats.isMastered && (
+                    <Button onClick={handleRetry}>
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Try Again with New Questions
+                    </Button>
+                )}
+            </div>
         )}
 
         {questions.map((q, qIndex) => (
@@ -143,16 +151,11 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
         ))}
         
         <div className="flex justify-start">
-            {!submitted ? (
+            {!submitted && (
                 <Button onClick={handleSubmit} disabled={Object.keys(answers).length !== questions.length}>
                     Submit Quiz
                 </Button>
-            ) : resultStats && !resultStats.isMastered ? (
-                <Button onClick={handleRetry}>
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Try Again with New Questions
-                </Button>
-            ) : null}
+            )}
         </div>
       </CardContent>
     </Card>
