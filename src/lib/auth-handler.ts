@@ -1,4 +1,5 @@
 'use server';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from './firebase-admin';
 import { supabase } from './supabase';
@@ -17,15 +18,14 @@ type AuthenticatedHandler = (
 ) => Promise<NextResponse | Response> | NextResponse | Response;
 
 /**
- * A higher-order function to wrap Next.js API route handlers with Firebase authentication.
- * It verifies the Firebase ID token from the Authorization header,
- * upserts the user into the Supabase 'users' table, and passes the user info to the handler.
- *
- * @param handler The API route handler to wrap.
- * @returns A new handler that includes authentication checks.
+ * A higher-order function to wrap Next.js route handlers with Firebase authentication.
  */
-export function withAuth(handler: AuthenticatedHandler) {
-  return async (req: NextRequest, context: { params: any }) => {
+export async function withAuth(
+  handler: AuthenticatedHandler
+): Promise<
+  (req: NextRequest, context: { params: any }) => Promise<NextResponse | Response>
+> {
+  return async function (req: NextRequest, context: { params: any }) {
     const authHeader = req.headers.get('authorization');
     const token = authHeader?.split('Bearer ')[1];
 
@@ -37,7 +37,6 @@ export function withAuth(handler: AuthenticatedHandler) {
       const decodedToken = await auth.verifyIdToken(token);
       const { uid, email } = decodedToken;
 
-      // Ensure user exists in our public `users` table
       const { error: upsertError } = await supabase
         .from('users')
         .upsert({ uid, email }, { onConflict: 'uid' });
@@ -47,7 +46,11 @@ export function withAuth(handler: AuthenticatedHandler) {
         return NextResponse.json({ error: 'Database error during user sync' }, { status: 500 });
       }
 
-      const authenticatedContext: AuthenticatedContext = { ...context, user: { uid, email } };
+      const authenticatedContext: AuthenticatedContext = {
+        user: { uid, email },
+        params: context.params,
+      };
+
       return handler(req, authenticatedContext);
     } catch (error: any) {
       console.error('Token verification error:', error.message);

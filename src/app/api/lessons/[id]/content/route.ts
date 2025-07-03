@@ -5,7 +5,7 @@ import { cache } from '@/lib/cache';
 import { generateLessonContent } from '@/ai/flows/generate-lesson-content';
 
 async function handler(req: NextRequest, context: AuthenticatedContext) {
-  const { id } = context.params;
+  const { id } = await context.params;
   const { uid } = context.user;
 
   // 1. Check cache first
@@ -57,4 +57,4 @@ async function handler(req: NextRequest, context: AuthenticatedContext) {
   }
 }
 
-export const GET = withAuth(handler);
+export const GET = await withAuth(handler);

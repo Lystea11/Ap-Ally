@@ -65,7 +65,7 @@ async function createRoadmapHandler(req: NextRequest, context: AuthenticatedCont
   return NextResponse.json({ success: true, roadmapId: roadmapData.id }, { status: 201 });
 }
 
-export const POST = withAuth(createRoadmapHandler);
+export const POST = await withAuth(createRoadmapHandler);
 
 
 /**
@@ -121,4 +121,4 @@ async function getLessonsHandler(req: NextRequest, context: AuthenticatedContext
   return NextResponse.json(latestRoadmap);
 }
 
-export const GET = withAuth(getLessonsHandler);
+export const GET = await withAuth(getLessonsHandler);

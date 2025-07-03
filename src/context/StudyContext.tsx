@@ -45,7 +45,9 @@ export const StudyProvider = ({ children }: { children: ReactNode }) => {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    fetchRoadmap();
+    (async () => {
+      await fetchRoadmap();
+    })();
   }, [fetchRoadmap]);
 
   useEffect(() => {
