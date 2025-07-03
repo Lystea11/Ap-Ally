@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Award, BrainCircuit, Check, X, RefreshCw } from 'lucide-react';
+import { Award, BrainCircuit, Check, X, RefreshCw, ThumbsUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -54,7 +54,8 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
     const correctCount = questions.filter((q, i) => answers[i] === q.correctAnswerIndex).length;
     const totalCount = questions.length;
     const isMastered = correctCount === totalCount;
-    return { correctCount, totalCount, isMastered };
+    const isPassed = correctCount >= 4;
+    return { correctCount, totalCount, isMastered, isPassed };
   };
 
   const resultStats = getResultStats();
@@ -70,14 +71,32 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
       </CardHeader>
       <CardContent className="space-y-8">
         {resultStats && (
-            <Alert variant={resultStats.isMastered ? 'default' : 'destructive'} className={cn(resultStats.isMastered && "border-green-500 bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200 dark:border-green-800")}>
-                {resultStats.isMastered && <Award className="h-4 w-4 !text-green-800 dark:!text-green-200" />}
+            <Alert 
+              variant={resultStats.isPassed ? 'default' : 'destructive'} 
+              className={cn(
+                resultStats.isMastered && "border-green-500 bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200 dark:border-green-800",
+                resultStats.isPassed && !resultStats.isMastered && "border-primary/50 bg-primary/10 text-primary dark:bg-primary/20 dark:border-primary/60"
+              )}
+            >
+                {resultStats.isMastered ? (
+                  <Award className="h-4 w-4 !text-green-800 dark:!text-green-200" />
+                ) : resultStats.isPassed ? (
+                  <ThumbsUp className="h-4 w-4 text-primary" />
+                ) : null}
                  <AlertTitle className="font-bold">
-                    {resultStats.isMastered ? "Mastery Achieved!" : "Review Needed"}
+                    {resultStats.isMastered
+                      ? "Mastery Achieved!"
+                      : resultStats.isPassed
+                      ? "Congratulations, You Passed!"
+                      : "Review Needed"}
                 </AlertTitle>
                 <AlertDescription>
                     You scored {resultStats.correctCount} out of {resultStats.totalCount}. 
-                    {resultStats.isMastered ? " Great job! You've earned the mastery badge for this lesson." : " Review the explanations below and try again."}
+                    {resultStats.isMastered
+                      ? " Great job! You've earned the mastery badge for this lesson."
+                      : resultStats.isPassed
+                      ? " You're ready to move on. Retake the quiz for a perfect score to earn the mastery badge!"
+                      : " Review the explanations below and try again."}
                 </AlertDescription>
             </Alert>
         )}
