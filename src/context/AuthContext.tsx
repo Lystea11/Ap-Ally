@@ -29,14 +29,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  const login = async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-      // onAuthStateChanged will handle the user state update
-    } catch (error) {
+  const login = () => {
+    return signInWithPopup(auth, googleProvider).catch((error) => {
       console.error("Firebase authentication failed with popup:", error);
-      throw error; // Re-throw to be caught by the calling component
-    }
+      throw error;
+    });
   };
 
   const logout = async () => {
