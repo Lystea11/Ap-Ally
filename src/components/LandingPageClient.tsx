@@ -23,13 +23,13 @@ export function LandingPageClient() {
 
   const handleGetStarted = async () => {
     try {
-      // The login function initiates a redirect, so we don't need to do anything after.
+      // The login function initiates a popup, so we don't need to do anything after.
       await login();
     } catch (error) {
       console.error("Login failed", error);
       toast({
         title: "Login Failed",
-        description: "There was a problem signing you in. Please try again.",
+        description: "Could not sign you in. Please ensure popups are enabled and try again.",
         variant: "destructive",
       });
     }

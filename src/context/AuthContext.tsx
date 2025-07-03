@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useState, useEffect, ReactNode } from "react";
-import { User, onAuthStateChanged, signInWithRedirect, signOut } from "firebase/auth";
+import { User, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase-client";
 import { useRouter } from "next/navigation";
 
@@ -23,7 +23,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
-    // onAuthStateChanged handles the result of signInWithRedirect automatically and is the single source of truth.
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
@@ -34,19 +33,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = async () => {
-    setLoading(true);
     try {
-      // The redirect will happen, and onAuthStateChanged will handle the result on the return page.
-      await signInWithRedirect(auth, googleProvider);
+      await signInWithPopup(auth, googleProvider);
+      // onAuthStateChanged will handle the user state update
     } catch (error) {
-      console.error("Firebase authentication failed", error);
-      setLoading(false);
-      throw error;
+      console.error("Firebase authentication failed with popup:", error);
+      throw error; // Re-throw to be caught by the calling component
     }
   };
 
   const logout = async () => {
-    setLoading(true);
     try {
       await signOut(auth);
       router.push("/");
