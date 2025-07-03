@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { ParsedQuiz } from "@/lib/types";
+import { GenerateQuizOutput } from "@/ai/flows/generate-quiz";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
 interface QuizEngineProps {
-  quiz: ParsedQuiz;
+  quiz: GenerateQuizOutput;
   onSubmit: (answers: string) => void;
 }
 
@@ -35,8 +35,8 @@ export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
   }
 
 
-  const handleAnswerChange = (questionId: number, value: string) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+  const handleAnswerChange = (questionIndex: number, value: string) => {
+    setAnswers((prev) => ({ ...prev, [questionIndex]: value }));
   };
 
   const handleNext = () => {
@@ -47,8 +47,8 @@ export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
 
   const handleSubmit = () => {
     const formattedAnswers = Object.entries(answers)
-      .map(([questionId, answer]) => {
-        const question = quiz.questions.find((q) => q.id === parseInt(questionId));
+      .map(([questionIndex, answer]) => {
+        const question = quiz.questions[parseInt(questionIndex)];
         return `Question: ${question?.question}\nAnswer: ${answer}`;
       })
       .join("\n\n");
@@ -59,7 +59,6 @@ export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
   const isLastQuestion = currentQuestionIndex === quiz.questions.length - 1;
 
   if (!currentQuestion) {
-    // This case should not be reached if the check above is in place, but serves as a safeguard.
     return null;
   }
 
@@ -74,14 +73,14 @@ export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
         </CardHeader>
         <CardContent>
           <RadioGroup
-            value={answers[currentQuestion.id] || ""}
-            onValueChange={(value) => handleAnswerChange(currentQuestion.id, value)}
+            value={answers[currentQuestionIndex] || ""}
+            onValueChange={(value) => handleAnswerChange(currentQuestionIndex, value)}
             className="space-y-4"
           >
             {currentQuestion.options.map((option, i) => (
               <div key={i} className="flex items-center space-x-3">
-                <RadioGroupItem value={option} id={`q${currentQuestion.id}-o${i}`} />
-                <Label htmlFor={`q${currentQuestion.id}-o${i}`} className="text-base font-normal">
+                <RadioGroupItem value={option} id={`q${currentQuestionIndex}-o${i}`} />
+                <Label htmlFor={`q${currentQuestionIndex}-o${i}`} className="text-base font-normal">
                   {option}
                 </Label>
               </div>
@@ -92,7 +91,7 @@ export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
           {isLastQuestion ? (
             <Button
               onClick={handleSubmit}
-              disabled={!answers[currentQuestion.id]}
+              disabled={answers[currentQuestionIndex] === undefined}
               size="lg"
             >
               Finish & Generate Roadmap
@@ -100,7 +99,7 @@ export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
           ) : (
             <Button
               onClick={handleNext}
-              disabled={!answers[currentQuestion.id]}
+              disabled={answers[currentQuestionIndex] === undefined}
               size="lg"
             >
               Next

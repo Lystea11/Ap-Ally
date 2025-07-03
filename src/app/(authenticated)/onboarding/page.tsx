@@ -6,7 +6,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-import { generateQuiz } from "@/ai/flows/generate-quiz";
+import { generateQuiz, GenerateQuizOutput } from "@/ai/flows/generate-quiz";
 import { generateRoadmap } from "@/ai/flows/generate-roadmap";
 import { useStudy } from "@/hooks/useStudy";
 import { useToast } from "@/hooks/use-toast";
@@ -19,7 +19,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { QuizEngine } from "@/components/QuizEngine";
-import { ParsedQuiz } from "@/lib/types";
 
 const apCourses = [
   "AP Calculus AB",
@@ -50,7 +49,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
-  const [quizData, setQuizData] = useState<ParsedQuiz | null>(null);
+  const [quizData, setQuizData] = useState<GenerateQuizOutput | null>(null);
   const [onboardingData, setOnboardingData] = useState<OnboardingFormValues | null>(null);
   
   const form = useForm<OnboardingFormValues>({
@@ -72,14 +71,7 @@ export default function OnboardingPage() {
         throw new Error("AI failed to generate quiz questions.");
       }
       
-      const parsed: ParsedQuiz = {
-        questions: result.questions.map((q, index) => ({
-          ...q,
-          id: index + 1,
-        })),
-      };
-
-      setQuizData(parsed);
+      setQuizData(result);
       setStep(2);
     } catch (error) {
       console.error("Failed to generate quiz:", error);
@@ -102,8 +94,7 @@ export default function OnboardingPage() {
     
     try {
       const result = await generateRoadmap({ ...onboardingData, quizResults: answers });
-      const roadmapJson = JSON.parse(result.roadmap);
-      setRoadmap(roadmapJson);
+      setRoadmap(result.roadmap);
       router.push("/dashboard");
     } catch (error) {
       console.error("Failed to generate roadmap:", error);

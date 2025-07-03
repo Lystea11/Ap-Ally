@@ -20,8 +20,22 @@ const GenerateRoadmapInputSchema = z.object({
 });
 export type GenerateRoadmapInput = z.infer<typeof GenerateRoadmapInputSchema>;
 
+const LessonSchema = z.object({
+  title: z.string().describe('The title of the lesson.'),
+});
+
+const UnitSchema = z.object({
+  title: z.string().describe('The title of the unit.'),
+  lessons: z.array(LessonSchema).describe('A list of lessons in this unit.'),
+});
+
+const RoadmapSchema = z.object({
+  title: z.string().describe("The title for the overall study roadmap."),
+  units: z.array(UnitSchema).describe('A list of units, each containing lessons.'),
+});
+
 const GenerateRoadmapOutputSchema = z.object({
-  roadmap: z.string().describe('The generated study roadmap in JSON format.'),
+  roadmap: RoadmapSchema,
   progress: z.string().describe('One-sentence summary of what has been generated.')
 });
 export type GenerateRoadmapOutput = z.infer<typeof GenerateRoadmapOutputSchema>;
@@ -34,13 +48,13 @@ const prompt = ai.definePrompt({
   name: 'generateRoadmapPrompt',
   input: {schema: GenerateRoadmapInputSchema},
   output: {schema: GenerateRoadmapOutputSchema},
-  prompt: `You are an expert AP study guide creator. Based on the student's AP course, experience level, and quiz results, generate a personalized study roadmap in JSON format.
+  prompt: `You are an expert AP study guide creator. Based on the student's AP course, experience level, and quiz results, generate a personalized study roadmap.
 
   AP Course: {{{apCourse}}}
   Experience Level: {{{experienceLevel}}}
   Quiz Results: {{{quizResults}}}
 
-The roadmap should include units, and each unit should include lessons.
+The roadmap should have a title, and include units, and each unit should include lessons. The title of the roadmap should be the name of the AP course.
 `,
 });
 
