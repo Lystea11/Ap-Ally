@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Lesson } from "@/lib/types";
@@ -5,7 +6,7 @@ import type { GenerateLessonContentOutput } from "@/ai/flows/generate-lesson-con
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, Circle, BrainCircuit } from "lucide-react";
+import { CheckCircle, Circle, BrainCircuit, ArrowRight } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -14,9 +15,10 @@ interface LessonViewerProps {
   lesson: Lesson;
   content: GenerateLessonContentOutput;
   onToggleComplete: () => void;
+  nextLesson: Lesson | null;
 }
 
-export function LessonViewer({ lesson, content, onToggleComplete }: LessonViewerProps) {
+export function LessonViewer({ lesson, content, onToggleComplete, nextLesson }: LessonViewerProps) {
   return (
     <div className="space-y-8">
       <Card>
@@ -41,7 +43,8 @@ export function LessonViewer({ lesson, content, onToggleComplete }: LessonViewer
             ) : (
               <>
                 <CheckCircle className="mr-2 h-5 w-5" />
-                Mark as Complete
+                {nextLesson ? 'Complete & Next Lesson' : 'Complete & Finish'}
+                {nextLesson && <ArrowRight className="ml-2 h-5 w-5" />}
               </>
             )}
           </Button>

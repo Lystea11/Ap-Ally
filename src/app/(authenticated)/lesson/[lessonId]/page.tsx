@@ -1,7 +1,9 @@
+
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useStudy } from "@/hooks/useStudy";
 import { generateLessonContent } from "@/ai/flows/generate-lesson-content";
 import type { GenerateLessonContentOutput } from "@/ai/flows/generate-lesson-content";
@@ -10,28 +12,40 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Lesson } from "@/lib/types";
 
 export default function LessonPage({ params }: { params: { lessonId: string } }) {
   const { lessonId } = params;
   const { roadmap, updateLessonProgress } = useStudy();
+  const router = useRouter();
   const [lessonContent, setLessonContent] = useState<GenerateLessonContentOutput | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const lesson = useMemo(() => {
-    if (!roadmap) return null;
-    for (const unit of roadmap.units) {
-      const foundLesson = unit.lessons.find((l) => l.id === lessonId);
-      if (foundLesson) return foundLesson;
+  const { lesson, nextLesson } = useMemo(() => {
+    if (!roadmap) return { lesson: null, nextLesson: null };
+
+    const allLessons = roadmap.units.flatMap((unit) => unit.lessons);
+    let currentLesson: Lesson | null = null;
+    let nextLessonResult: Lesson | null = null;
+
+    const currentLessonIndex = allLessons.findIndex((l) => l.id === lessonId);
+
+    if (currentLessonIndex !== -1) {
+      currentLesson = allLessons[currentLessonIndex];
+      if (currentLessonIndex < allLessons.length - 1) {
+        nextLessonResult = allLessons[currentLessonIndex + 1];
+      }
     }
-    return null;
+
+    return { lesson: currentLesson, nextLesson: nextLessonResult };
   }, [roadmap, lessonId]);
 
   useEffect(() => {
     if (lesson) {
+      setLoading(true);
+      setError(null);
       const fetchContent = async () => {
-        setLoading(true);
-        setError(null);
         try {
           const content = await generateLessonContent({ topic: lesson.title });
           setLessonContent(content);
@@ -43,8 +57,11 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
         }
       };
       fetchContent();
+    } else if (roadmap) { // roadmap has loaded but no lesson found
+      setLoading(false);
+      setError("Lesson not found.");
     }
-  }, [lesson]);
+  }, [lesson, roadmap]);
 
   if (loading) {
     return (
@@ -76,7 +93,21 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
   }
 
   const handleMarkAsComplete = () => {
-    updateLessonProgress(lesson.id, !lesson.completed);
+    // If it's already completed, we're marking it as incomplete.
+    if (lesson.completed) {
+      updateLessonProgress(lesson.id, false);
+      return;
+    }
+
+    // Otherwise, we're marking it as complete.
+    updateLessonProgress(lesson.id, true);
+    
+    // Then navigate to the next lesson, or the dashboard if it's the last one.
+    if (nextLesson) {
+      router.push(`/lesson/${nextLesson.id}`);
+    } else {
+      router.push('/dashboard');
+    }
   };
 
   return (
@@ -93,6 +124,7 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
         lesson={lesson}
         content={lessonContent}
         onToggleComplete={handleMarkAsComplete}
+        nextLesson={nextLesson}
       />
     </div>
   );
