@@ -18,9 +18,9 @@ const GenerateLessonContentInputSchema = z.object({
 export type GenerateLessonContentInput = z.infer<typeof GenerateLessonContentInputSchema>;
 
 const GenerateLessonContentOutputSchema = z.object({
-  content: z.string().describe('The generated lesson content.'),
-  practiceQuestions: z.array(z.string()).describe('Practice questions for the lesson.'),
-  progress: z.string().describe('A short summary of the generated content.'),
+  content: z.string().describe('The generated lesson content in Markdown format. Should not include practice questions.'),
+  practiceQuestions: z.array(z.string()).describe('An array of practice questions for the lesson.'),
+  progress: z.string().describe('A short, one-sentence summary describing the core concept of the lesson.'),
 });
 export type GenerateLessonContentOutput = z.infer<typeof GenerateLessonContentOutputSchema>;
 
@@ -32,16 +32,22 @@ const prompt = ai.definePrompt({
   name: 'generateLessonContentPrompt',
   input: {schema: GenerateLessonContentInputSchema},
   output: {schema: GenerateLessonContentOutputSchema},
-  prompt: `You are an expert educator creating lesson content for AP level courses.
-  Your goal is to teach the student the material and then provide practice questions to test their understanding.
+  prompt: `You are an expert educator creating lesson content for AP level courses. Your goal is to create a clear and concise lesson on a specific topic.
 
-  Topic: {{{topic}}}
+Topic: {{{topic}}}
 
-  Create lesson content that thoroughly covers the topic. Use Markdown for formatting (headings, lists, bold text, etc.). For mathematical equations, use LaTeX syntax (e.g., $E=mc^2$ for inline and $$...$$ for block equations).
-  Include explanations, examples, and relevant details.
-  Also, create a few practice questions that will help the student test their understanding of the material.
-  Return the lesson content and practice questions in the output.  Also, add one short, one-sentence summary of what you have generated to the 'progress' field in the output.
-  `,
+**Instructions:**
+1.  **Lesson Content ('content' field):**
+    - Generate the main educational text for the lesson on the given topic.
+    - The content should be comprehensive, with clear explanations, examples, and relevant details.
+    - Use Markdown for all formatting (headings, lists, bold text).
+    - Use LaTeX syntax for mathematical equations (e.g., $E=mc^2$ for inline and $$...$$ for block equations).
+    - **IMPORTANT**: Do NOT include the practice questions in this 'content' field.
+2.  **Practice Questions ('practiceQuestions' field):**
+    - Separately, create a few practice questions to test the student's understanding of the material.
+3.  **Lesson Summary ('progress' field):**
+    - Provide a short, one-sentence summary that describes the core concept of the lesson. For example: "This lesson covers the fundamental theorem of calculus."
+`,
 });
 
 const generateLessonContentFlow = ai.defineFlow(
