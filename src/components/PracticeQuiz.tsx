@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Award, BrainCircuit, Check, X } from 'lucide-react';
+import { Award, BrainCircuit, Check, X, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -17,9 +17,11 @@ type PracticeQuestion = GenerateLessonContentOutput['practiceQuestions'][0];
 interface PracticeQuizProps {
   lessonId: string;
   questions: PracticeQuestion[];
+  onQuizComplete: (score: { correct: number, total: number }) => void;
+  onRetry: () => void;
 }
 
-export function PracticeQuiz({ lessonId, questions }: PracticeQuizProps) {
+export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: PracticeQuizProps) {
   const { setLessonMastery } = useStudy();
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -30,12 +32,22 @@ export function PracticeQuiz({ lessonId, questions }: PracticeQuizProps) {
   };
 
   const handleSubmit = () => {
+    const correctCount = questions.filter((q, i) => answers[i] === q.correctAnswerIndex).length;
+    const totalCount = questions.length;
+    
     setSubmitted(true);
-    const correctAnswers = questions.filter((q, i) => answers[i] === q.correctAnswerIndex).length;
-    if (correctAnswers === questions.length) {
+    onQuizComplete({ correct: correctCount, total: totalCount });
+
+    if (correctCount === totalCount) {
       setLessonMastery(lessonId, true);
     }
   };
+
+  const handleRetry = () => {
+    setAnswers({});
+    setSubmitted(false);
+    onRetry();
+  }
 
   const getResultStats = () => {
     if (!submitted) return null;
@@ -54,7 +66,7 @@ export function PracticeQuiz({ lessonId, questions }: PracticeQuizProps) {
           <BrainCircuit className="h-7 w-7 text-primary" />
           <CardTitle className="font-headline text-2xl">Practice Quiz</CardTitle>
         </div>
-        <CardDescription>Test your understanding to earn a mastery badge.</CardDescription>
+        <CardDescription>Score at least 4/{questions.length} to pass. Get a perfect score to earn a mastery badge.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
         {resultStats && (
@@ -110,12 +122,19 @@ export function PracticeQuiz({ lessonId, questions }: PracticeQuizProps) {
             )}
           </div>
         ))}
-
-        {!submitted && (
-            <Button onClick={handleSubmit} disabled={Object.keys(answers).length !== questions.length}>
-                Check Answers
-            </Button>
-        )}
+        
+        <div className="flex justify-start">
+            {!submitted ? (
+                <Button onClick={handleSubmit} disabled={Object.keys(answers).length !== questions.length}>
+                    Submit Quiz
+                </Button>
+            ) : resultStats && !resultStats.isMastered ? (
+                <Button onClick={handleRetry}>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Try Again with New Questions
+                </Button>
+            ) : null}
+        </div>
       </CardContent>
     </Card>
   );

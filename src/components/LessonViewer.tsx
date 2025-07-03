@@ -16,9 +16,11 @@ interface LessonViewerProps {
   content: GenerateLessonContentOutput;
   onToggleComplete: () => void;
   nextLesson: Lesson | null;
+  onQuizComplete: (score: { correct: number, total: number }) => void;
+  onRetryQuiz: () => void;
 }
 
-export function LessonViewer({ lesson, content, onToggleComplete, nextLesson }: LessonViewerProps) {
+export function LessonViewer({ lesson, content, onToggleComplete, nextLesson, onQuizComplete, onRetryQuiz }: LessonViewerProps) {
   return (
     <div className="space-y-8">
       <Card>
@@ -55,6 +57,8 @@ export function LessonViewer({ lesson, content, onToggleComplete, nextLesson }: 
         <PracticeQuiz
           lessonId={lesson.id}
           questions={content.practiceQuestions}
+          onQuizComplete={onQuizComplete}
+          onRetry={onRetryQuiz}
         />
       )}
     </div>

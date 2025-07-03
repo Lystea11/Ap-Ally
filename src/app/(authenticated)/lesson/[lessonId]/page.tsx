@@ -13,14 +13,18 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Lesson } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LessonPage({ params }: { params: { lessonId: string } }) {
   const { lessonId } = params;
   const { roadmap, updateLessonProgress } = useStudy();
   const router = useRouter();
+  const { toast } = useToast();
+  
   const [lessonContent, setLessonContent] = useState<GenerateLessonContentOutput | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [quizResult, setQuizResult] = useState<{ correct: number, total: number } | null>(null);
 
   const { lesson, nextLesson } = useMemo(() => {
     if (!roadmap) return { lesson: null, nextLesson: null };
@@ -41,33 +45,46 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
     return { lesson: currentLesson, nextLesson: nextLessonResult };
   }, [roadmap, lessonId]);
 
+  const fetchLessonContent = async () => {
+    if (!lesson) return;
+    setLoading(true);
+    setError(null);
+    setQuizResult(null); // Reset quiz results when fetching new content
+    try {
+      const content = await generateLessonContent({ topic: lesson.title });
+      setLessonContent(content);
+    } catch (err) {
+      setError("Failed to load lesson content. Please try again later.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (lesson) {
-      setLoading(true);
-      setError(null);
-      const fetchContent = async () => {
-        try {
-          const content = await generateLessonContent({ topic: lesson.title });
-          setLessonContent(content);
-        } catch (err) {
-          setError("Failed to load lesson content. Please try again later.");
-          console.error(err);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchContent();
+      fetchLessonContent();
     } else if (roadmap) { // roadmap has loaded but no lesson found
       setLoading(false);
       setError("Lesson not found.");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lesson, roadmap]);
+
+  const handleQuizComplete = (result: { correct: number, total: number }) => {
+    setQuizResult(result);
+  };
+
+  const handleRetryQuiz = () => {
+    fetchLessonContent();
+  };
+
 
   if (loading) {
     return (
       <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4 text-center">
         <LoadingSpinner className="h-16 w-16" />
-        <p className="text-lg text-muted-foreground">Generating your lesson on "{lesson?.title || 'this topic'}"...</p>
+        <p className="text-lg text-muted-foreground">{quizResult ? 'Generating new questions...' : `Generating your lesson on "${lesson?.title || 'this topic'}"...`}</p>
       </div>
     );
   }
@@ -93,16 +110,23 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
   }
 
   const handleMarkAsComplete = () => {
-    // If it's already completed, we're marking it as incomplete.
     if (lesson.completed) {
       updateLessonProgress(lesson.id, false);
       return;
     }
 
-    // Otherwise, we're marking it as complete.
+    const hasPracticeQuestions = lessonContent.practiceQuestions && lessonContent.practiceQuestions.length > 0;
+    if (hasPracticeQuestions && (!quizResult || quizResult.correct < 4)) {
+      toast({
+        title: "Quiz Not Passed",
+        description: `You need to score at least 4/${lessonContent.practiceQuestions.length} to complete the lesson.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     updateLessonProgress(lesson.id, true);
     
-    // Then navigate to the next lesson, or the dashboard if it's the last one.
     if (nextLesson) {
       router.push(`/lesson/${nextLesson.id}`);
     } else {
@@ -125,6 +149,8 @@ export default function LessonPage({ params }: { params: { lessonId: string } })
         content={lessonContent}
         onToggleComplete={handleMarkAsComplete}
         nextLesson={nextLesson}
+        onQuizComplete={handleQuizComplete}
+        onRetryQuiz={handleRetryQuiz}
       />
     </div>
   );

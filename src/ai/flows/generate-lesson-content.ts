@@ -26,7 +26,7 @@ const PracticeQuestionSchema = z.object({
 
 const GenerateLessonContentOutputSchema = z.object({
   content: z.string().describe('The generated lesson content in Markdown format. Should not include a main title or practice questions.'),
-  practiceQuestions: z.array(PracticeQuestionSchema).describe('An array of interactive practice questions.'),
+  practiceQuestions: z.array(PracticeQuestionSchema).length(5).describe('An array of exactly 5 interactive practice questions.'),
   progress: z.string().describe('A short, one-sentence summary describing the core concept of the lesson.'),
 });
 export type GenerateLessonContentOutput = z.infer<typeof GenerateLessonContentOutputSchema>;
@@ -52,7 +52,7 @@ Topic: {{{topic}}}
     - Use LaTeX syntax for mathematical equations (e.g., $E=mc^2$ for inline and $$...$$ for block equations).
     - **IMPORTANT**: Do NOT include the practice questions in this 'content' field.
 2.  **Interactive Practice Questions ('practiceQuestions' field):**
-    - Separately, create a few (3-5) interactive practice questions to test the student's understanding.
+    - Separately, create exactly 5 interactive practice questions to test the student's understanding.
     - For each question, provide:
       - The question text.
       - An array of exactly 4 multiple choice options.
