@@ -22,17 +22,17 @@ export function LandingPageClient() {
   }, [isAuthenticated, loading, router]);
 
 
-  const handleGetStarted = async () => {
+  const handleGetStarted = () => {
     hasTriedLogin.current = true;
-    try {
-      await login(); // this triggers popup
-    } catch (error) {
+
+    // Call login directly inside the synchronous click handler
+    login().catch((error) => {
       toast({
         title: "Login Failed",
         description: "Could not sign you in. Please ensure popups are enabled and try again.",
         variant: "destructive",
       });
-    }
+    });
   };
 
   if (loading || isAuthenticated) {
