@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   name: string;
@@ -8,6 +9,7 @@ export interface Lesson {
   id: string;
   title: string;
   completed: boolean;
+  mastery: boolean;
 }
 
 export interface Unit {

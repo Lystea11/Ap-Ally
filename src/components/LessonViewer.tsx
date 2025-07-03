@@ -5,11 +5,11 @@ import { Lesson } from "@/lib/types";
 import type { GenerateLessonContentOutput } from "@/ai/flows/generate-lesson-content";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { CheckCircle, Circle, BrainCircuit, ArrowRight } from "lucide-react";
+import { CheckCircle, Circle, ArrowRight } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import { PracticeQuiz } from "./PracticeQuiz";
 
 interface LessonViewerProps {
   lesson: Lesson;
@@ -52,23 +52,10 @@ export function LessonViewer({ lesson, content, onToggleComplete, nextLesson }: 
       </Card>
 
       {content.practiceQuestions && content.practiceQuestions.length > 0 && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <BrainCircuit className="h-7 w-7 text-primary" />
-              <CardTitle className="font-headline text-2xl">Practice Questions</CardTitle>
-            </div>
-            <CardDescription>Test your understanding of the material.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {content.practiceQuestions.map((question, index) => (
-              <div key={index}>
-                <p className="font-semibold">{index + 1}. {question}</p>
-                {index < content.practiceQuestions.length - 1 && <Separator className="mt-6" />}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <PracticeQuiz
+          lessonId={lesson.id}
+          questions={content.practiceQuestions}
+        />
       )}
     </div>
   );

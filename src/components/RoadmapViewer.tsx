@@ -1,10 +1,11 @@
+
 "use client";
 
 import Link from "next/link";
 import { Roadmap } from "@/lib/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, Circle, BookOpen } from "lucide-react";
+import { CheckCircle2, Circle, BookOpen, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface RoadmapViewerProps {
@@ -39,7 +40,7 @@ export function RoadmapViewer({ roadmap }: RoadmapViewerProps) {
                     <li key={lesson.id}>
                       <Link
                         href={`/lesson/${lesson.id}`}
-                        className="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-accent/50"
+                        className="group flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-accent/50"
                       >
                         {lesson.completed ? (
                           <CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -54,6 +55,9 @@ export function RoadmapViewer({ roadmap }: RoadmapViewerProps) {
                         >
                           {lesson.title}
                         </span>
+                        {lesson.mastery && (
+                            <Award className="ml-auto h-5 w-5 text-yellow-500 transition-transform group-hover:scale-125" />
+                        )}
                       </Link>
                     </li>
                   ))}

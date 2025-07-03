@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useState, ReactNode, useEffect } from "react";
@@ -7,6 +8,7 @@ interface StudyContextType {
   roadmap: Roadmap | null;
   setRoadmap: (roadmap: Roadmap) => void;
   updateLessonProgress: (lessonId: string, completed: boolean) => void;
+  setLessonMastery: (lessonId: string, achieved: boolean) => void;
   progress: number;
 }
 
@@ -56,6 +58,7 @@ export const StudyProvider = ({ children }: { children: ReactNode }) => {
                 ...lesson,
                 id: `unit-${unitIndex}-lesson-${lessonIndex}`,
                 completed: false,
+                mastery: false,
             })),
         })),
     };
@@ -78,9 +81,26 @@ export const StudyProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const setLessonMastery = (lessonId: string, achieved: boolean) => {
+    setRoadmapState((prevRoadmap) => {
+      if (!prevRoadmap) return null;
+      const newRoadmap = {
+        ...prevRoadmap,
+        units: prevRoadmap.units.map((unit) => ({
+          ...unit,
+          lessons: unit.lessons.map((lesson) =>
+            lesson.id === lessonId ? { ...lesson, mastery: achieved } : lesson
+          ),
+        })),
+      };
+      return newRoadmap;
+    });
+  };
+
+
   return (
     <StudyContext.Provider
-      value={{ roadmap, setRoadmap, updateLessonProgress, progress }}
+      value={{ roadmap, setRoadmap, updateLessonProgress, setLessonMastery, progress }}
     >
       {children}
     </StudyContext.Provider>
