@@ -20,7 +20,6 @@ import { Progress } from "@/components/ui/progress";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { QuizEngine } from "@/components/QuizEngine";
 import { ParsedQuiz } from "@/lib/types";
-import { parseQuiz } from "@/lib/quiz-parser";
 
 const apCourses = [
   "AP Calculus AB",
@@ -69,7 +68,17 @@ export default function OnboardingPage() {
     
     try {
       const result = await generateQuiz(data);
-      const parsed = parseQuiz(result.quiz);
+      if (!result?.questions?.length) {
+        throw new Error("AI failed to generate quiz questions.");
+      }
+      
+      const parsed: ParsedQuiz = {
+        questions: result.questions.map((q, index) => ({
+          ...q,
+          id: index + 1,
+        })),
+      };
+
       setQuizData(parsed);
       setStep(2);
     } catch (error) {

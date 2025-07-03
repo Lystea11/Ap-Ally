@@ -18,7 +18,10 @@ const GenerateQuizInputSchema = z.object({
 export type GenerateQuizInput = z.infer<typeof GenerateQuizInputSchema>;
 
 const GenerateQuizOutputSchema = z.object({
-  quiz: z.string().describe('The generated quiz questions.'),
+  questions: z.array(z.object({
+    question: z.string().describe('The text of the quiz question.'),
+    options: z.array(z.string()).describe('An array of 4 multiple choice options.'),
+  })).describe('An array of 3 to 5 quiz questions.'),
 });
 export type GenerateQuizOutput = z.infer<typeof GenerateQuizOutputSchema>;
 
@@ -30,12 +33,10 @@ const prompt = ai.definePrompt({
   name: 'generateQuizPrompt',
   input: {schema: GenerateQuizInputSchema},
   output: {schema: GenerateQuizOutputSchema},
-  prompt: `You are an expert AP tutor. Generate a short quiz based on the selected AP course and experience level to assess the student's current knowledge.
+  prompt: `You are an expert AP tutor. Generate a short quiz with 3-5 multiple choice questions to assess the student's current knowledge based on the selected AP course and experience level. For each question, provide 4 options.
 
   AP Course: {{{apCourse}}}
   Experience Level: {{{experienceLevel}}}
-
-  Quiz:
 `,
 });
 
