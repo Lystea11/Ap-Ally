@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -13,20 +13,20 @@ export function LandingPageClient() {
   const { login, loading, isAuthenticated } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const hasTriedLogin = useRef(false);
 
   useEffect(() => {
-    if (!loading && isAuthenticated) {
+    if (!loading && isAuthenticated && hasTriedLogin.current) {
       router.push("/dashboard");
     }
   }, [isAuthenticated, loading, router]);
 
 
   const handleGetStarted = async () => {
+    hasTriedLogin.current = true;
     try {
-      // The login function initiates a popup, so we don't need to do anything after.
-      await login();
+      await login(); // this triggers popup
     } catch (error) {
-      console.error("Login failed", error);
       toast({
         title: "Login Failed",
         description: "Could not sign you in. Please ensure popups are enabled and try again.",
