@@ -18,7 +18,7 @@ const GenerateLessonContentInputSchema = z.object({
 export type GenerateLessonContentInput = z.infer<typeof GenerateLessonContentInputSchema>;
 
 const GenerateLessonContentOutputSchema = z.object({
-  content: z.string().describe('The generated lesson content in Markdown format. Should not include practice questions.'),
+  content: z.string().describe('The generated lesson content in Markdown format. Should not include a main title or practice questions.'),
   practiceQuestions: z.array(z.string()).describe('An array of practice questions for the lesson.'),
   progress: z.string().describe('A short, one-sentence summary describing the core concept of the lesson.'),
 });
@@ -39,8 +39,9 @@ Topic: {{{topic}}}
 **Instructions:**
 1.  **Lesson Content ('content' field):**
     - Generate the main educational text for the lesson on the given topic.
+    - **Do NOT include a title or a heading like 'Introduction' at the beginning of the content.** The title is already displayed separately. Start the lesson directly.
     - The content should be comprehensive, with clear explanations, examples, and relevant details.
-    - Use Markdown for all formatting (headings, lists, bold text).
+    - Use Markdown for all formatting (subheadings, lists, bold text).
     - Use LaTeX syntax for mathematical equations (e.g., $E=mc^2$ for inline and $$...$$ for block equations).
     - **IMPORTANT**: Do NOT include the practice questions in this 'content' field.
 2.  **Practice Questions ('practiceQuestions' field):**
