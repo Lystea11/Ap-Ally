@@ -16,12 +16,16 @@ async function handler(req: NextRequest, context: AuthenticatedContext) {
   }
 
   // 2. If not in cache, check database
+  console.log('API called with id:', id, 'and user uid:', uid);
+
   const { data: lesson, error: lessonError } = await supabase
     .from('lessons')
     .select('title, content')
     .eq('id', id)
     .eq('user_uid', uid)
     .single();
+  
+  console.log('Supabase lesson result:', { lesson, lessonError });
 
   if (lessonError || !lesson) {
     return NextResponse.json({ error: 'Lesson not found' }, { status: 404 });

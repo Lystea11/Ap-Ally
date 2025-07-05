@@ -31,7 +31,7 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
     setAnswers((prev) => ({ ...prev, [questionIndex]: optionIndex }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const correctCount = questions.filter((q, i) => answers[i] === q.correctAnswerIndex).length;
     const totalCount = questions.length;
     
@@ -39,7 +39,7 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
     onQuizComplete({ correct: correctCount, total: totalCount });
 
     if (correctCount === totalCount) {
-      setLessonMastery(lessonId, true);
+      await setLessonMastery(lessonId, true);
     }
   };
 
