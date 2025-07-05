@@ -52,10 +52,10 @@ export const getLessonContentAPI = (lessonId: string): Promise<GenerateLessonCon
 
 
 // Progress & Mastery APIs
-export const updateProgressAPI = (lessonId: string, completed: boolean, mastery?: boolean, quizScore?: number): Promise<{ success: boolean }> => {
+export const updateProgressAPI = (lessonId: string, completed: boolean, mastery?: boolean, quiz_score?: number): Promise<{ success: boolean }> => {
     const payload: { [key: string]: any } = { lessonId, completed };
     if (mastery !== undefined) payload.mastery = mastery;
-    if (quizScore !== undefined) payload.quizScore = quizScore;
+    if (quiz_score !== undefined) payload.quiz_score = quiz_score;
     
     return fetchWithAuth('/api/progress', {
         method: 'POST',

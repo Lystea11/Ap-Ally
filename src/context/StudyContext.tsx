@@ -1,5 +1,4 @@
-
-"use client";
+// src/context/StudyContext.tsx
 
 import React, { createContext, useState, ReactNode, useEffect, useCallback } from "react";
 import { Roadmap } from "@/lib/types";
@@ -10,7 +9,7 @@ interface StudyContextType {
   roadmap: Roadmap | null;
   setRoadmap: (roadmap: Roadmap) => Promise<void>;
   updateLessonProgress: (lessonId: string, completed: boolean) => Promise<void>;
-  setLessonMastery: (lessonId: string, achieved: boolean) => Promise<void>;
+  setLessonMastery: (lessonId: string, achieved: boolean, quiz_score?: number) => Promise<void>; // Add quiz_score here
   progress: number;
   loading: boolean;
   refetchRoadmap: () => Promise<void>;
@@ -89,10 +88,9 @@ export const StudyProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const setLessonMastery = async (lessonId: string, achieved: boolean) => {
+  const setLessonMastery = async (lessonId: string, achieved: boolean, quiz_score?: number) => { // Add quiz_score here
     setRoadmapState((prev) => {
         if (!prev) return null;
-        const currentLesson = prev.units.flatMap(u => u.lessons).find(l => l.id === lessonId);
         return {
             ...prev,
             units: prev.units.map(u => ({
@@ -105,7 +103,7 @@ export const StudyProvider = ({ children }: { children: ReactNode }) => {
     try {
         const currentLesson = roadmap?.units.flatMap(u => u.lessons).find(l => l.id === lessonId);
         if (currentLesson) {
-          await updateProgressAPI(lessonId, currentLesson.completed, achieved);
+          await updateProgressAPI(lessonId, currentLesson.completed, achieved, quiz_score); // Pass quiz_score to the API
         }
     } catch (error) {
         console.error("Failed to set mastery:", error);

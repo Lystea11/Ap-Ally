@@ -1,3 +1,5 @@
+// src/app/api/mastery/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, AuthenticatedContext } from '@/lib/auth-handler';
 import { supabase } from '@/lib/supabase';
@@ -41,4 +43,4 @@ async function postMasteryHandler(req: NextRequest, context: AuthenticatedContex
   return NextResponse.json({ success: true }, { status: 200 });
 }
 
-export const POST = withAuth(postMasteryHandler);
+export const POST = await withAuth(postMasteryHandler);

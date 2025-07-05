@@ -1,11 +1,12 @@
+// src/components/LandingPageClient.tsx
 
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, GraduationCap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "./LoadingSpinner";
 
@@ -15,17 +16,9 @@ export function LandingPageClient() {
   const { toast } = useToast();
   const hasTriedLogin = useRef(false);
 
-  useEffect(() => {
-    if (!loading && isAuthenticated && hasTriedLogin.current) {
-      router.push("/dashboard");
-    }
-  }, [isAuthenticated, loading, router]);
-
-
   const handleGetStarted = () => {
     hasTriedLogin.current = true;
 
-    // Call login directly inside the synchronous click handler
     login().catch((error) => {
       toast({
         title: "Login Failed",
@@ -34,12 +27,29 @@ export function LandingPageClient() {
       });
     });
   };
+  
+  const handleStartStudying = () => {
+    router.push("/dashboard");
+  };
 
-  if (loading || isAuthenticated) {
+  if (loading) {
      return (
         <div className="flex h-11 items-center justify-center">
             <LoadingSpinner />
         </div>
+    )
+  }
+  
+  if (isAuthenticated) {
+    return (
+      <Button
+        size="lg"
+        onClick={handleStartStudying}
+        className="font-bold"
+      >
+        <GraduationCap className="mr-2 h-5 w-5" />
+        Start Studying!
+      </Button>
     )
   }
 

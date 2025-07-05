@@ -1,3 +1,4 @@
+// src/components/PracticeQuiz.tsx
 
 "use client";
 
@@ -11,6 +12,9 @@ import { Label } from '@/components/ui/label';
 import { Award, BrainCircuit, Check, X, RefreshCw, ThumbsUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 type PracticeQuestion = GenerateLessonContentOutput['practiceQuestions'][0];
 
@@ -34,13 +38,12 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
   const handleSubmit = async () => {
     const correctCount = questions.filter((q, i) => answers[i] === q.correctAnswerIndex).length;
     const totalCount = questions.length;
+    const isMastered = correctCount === totalCount;
     
     setSubmitted(true);
     onQuizComplete({ correct: correctCount, total: totalCount });
 
-    if (correctCount === totalCount) {
-      await setLessonMastery(lessonId, true);
-    }
+    await setLessonMastery(lessonId, isMastered, correctCount);
   };
 
   const handleRetry = () => {
@@ -59,6 +62,11 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
   };
 
   const resultStats = getResultStats();
+  
+  // Custom renderer to handle paragraphs inside labels and other inline contexts
+  const renderers = {
+    p: (props: any) => <span {...props} className="inline" />
+  };
 
   return (
     <Card>
@@ -115,7 +123,12 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
 
         {questions.map((q, qIndex) => (
           <div key={qIndex} className="space-y-4">
-            <p className="font-semibold">{qIndex + 1}. {q.question}</p>
+            <div className="font-semibold flex items-center gap-2 prose prose-lg dark:prose-invert max-w-none">
+              <span>{qIndex + 1}.</span>
+              <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                {q.question}
+              </ReactMarkdown>
+            </div>
             <RadioGroup
               value={answers[qIndex]?.toString() ?? ''}
               onValueChange={(value) => handleAnswerChange(qIndex, parseInt(value))}
@@ -137,7 +150,9 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
                   >
                     <RadioGroupItem value={oIndex.toString()} id={`q${qIndex}-o${oIndex}`} />
                     <Label htmlFor={`q${qIndex}-o${oIndex}`} className="flex-1 font-normal cursor-pointer">
-                      {option}
+                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={renderers}>
+                        {option}
+                      </ReactMarkdown>
                     </Label>
                     {submitted && (isSelected || isCorrect) && (
                       <div className="ml-auto">{statusIcon}</div>
@@ -148,7 +163,10 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
             </RadioGroup>
             {submitted && (
                 <div className="p-4 bg-muted/50 rounded-md mt-2 text-sm">
-                    <p><span className="font-semibold">Explanation:</span> {q.explanation}</p>
+                    <span className="font-semibold">Explanation: </span>
+                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={renderers}>
+                        {q.explanation}
+                    </ReactMarkdown>
                 </div>
             )}
           </div>

@@ -1,3 +1,4 @@
+// src/app/api/mastery/[course]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, AuthenticatedContext } from '@/lib/auth-handler';
 import { supabase } from '@/lib/supabase';
@@ -32,4 +33,4 @@ async function getMasteryHandler(req: NextRequest, context: AuthenticatedContext
   return NextResponse.json(data);
 }
 
-export const GET = withAuth(getMasteryHandler);
+export const GET = await withAuth(getMasteryHandler);

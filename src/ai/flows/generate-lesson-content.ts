@@ -1,14 +1,6 @@
 // src/ai/flows/generate-lesson-content.ts
 'use server';
 
-/**
- * @fileOverview Generates lesson content with practice questions for a given topic.
- *
- * - generateLessonContent - A function that generates lesson content.
- * - GenerateLessonContentInput - The input type for the generateLessonContent function.
- * - GenerateLessonContentOutput - The return type for the generateLessonContent function.
- */
-
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
@@ -24,8 +16,29 @@ const PracticeQuestionSchema = z.object({
   explanation: z.string().describe('A brief explanation for why the correct answer is correct.')
 });
 
+// New structured content schemas
+const MarkdownContentSchema = z.object({
+  type: z.enum(['markdown']),
+  content: z.string(),
+});
+
+const TableContentSchema = z.object({
+  type: z.enum(['table']),
+  headers: z.array(z.string()),
+  rows: z.array(z.array(z.string())),
+});
+
+const DiagramContentSchema = z.object({
+    type: z.enum(['diagram']),
+    diagramType: z.enum(['mermaid']),
+    code: z.string(),
+});
+
+const ContentBlockSchema = z.union([MarkdownContentSchema, TableContentSchema, DiagramContentSchema]);
+
+
 const GenerateLessonContentOutputSchema = z.object({
-  content: z.string().describe('The generated lesson content in Markdown format. Should not include a main title or practice questions.'),
+  content: z.array(ContentBlockSchema).describe('An array of content blocks, which can be of type markdown, table, or diagram.'),
   practiceQuestions: z.array(PracticeQuestionSchema).length(5).describe('An array of exactly 5 interactive practice questions.'),
   progress: z.string().describe('A short, one-sentence summary describing the core concept of the lesson.'),
 });
@@ -39,21 +52,22 @@ const prompt = ai.definePrompt({
   name: 'generateLessonContentPrompt',
   input: {schema: GenerateLessonContentInputSchema},
   output: {schema: GenerateLessonContentOutputSchema},
-  prompt: `You are an expert educator creating lesson content for AP level courses. Your goal is to create a clear and concise lesson on a specific topic, along with interactive practice questions.
+  prompt: `You are an expert educator creating lesson content for AP level courses. Your goal is to create a clear and structured lesson on a specific topic, along with interactive practice questions.
 
 Topic: {{{topic}}}
 
 **Instructions:**
 1.  **Lesson Content ('content' field):**
-    - Generate the main educational text for the lesson on the given topic.
-    - **Do NOT include a title or a heading like 'Introduction' at the beginning of the content.** The title is already displayed separately. Start the lesson directly.
-    - The content should be comprehensive, with clear explanations, examples, and relevant details.
-    - Use Markdown for all formatting (subheadings, lists, bold text).
-    - Use LaTeX syntax for mathematical equations (e.g., $E=mc^2$ for inline and $$...$$ for block equations).
+    - Generate the lesson as an array of content blocks. Each block must have a 'type'.
+    - For regular text, use \`{ "type": "markdown", "content": "..." }\`. Use Markdown for formatting (subheadings, lists, bold).
+    - **For tables, use the JSON format:** \`{ "type": "table", "headers": ["Header 1", "Header 2"], "rows": [["Row 1 Col 1", "Row 1 Col 2"], ["Row 2 Col 1", "Row 2 Col 2"]] }\`. This is crucial for correct rendering.
+    - **For diagrams, use the Mermaid format:** \`{ "type": "diagram", "diagramType": "mermaid", "code": "graph TD; A-->B;" }\`.
+    - Use LaTeX for all mathematical equations (e.g., $E=mc^2$ or $$...$$). The rendering happens on the client, so do not use markdown tables for equations.
+    - **IMPORTANT**: When generating complex content like Markdown tables that contain LaTeX, you MUST escape special characters to prevent rendering issues. For example, use '\\|' instead of '|' inside LaTeX equations within a table.
     - **IMPORTANT**: Do NOT include the practice questions in this 'content' field.
-2.  **Interactive Practice Questions ('practiceQuestions' field):**
+2.  **Practice Questions ('practiceQuestions' field):**
     - Separately, create exactly 5 interactive practice questions to test the student's understanding.
-    - For each question, provide:
+    - For each, provide:
       - The question text.
       - An array of exactly 4 multiple choice options.
       - The 0-based index of the correct answer.

@@ -1,3 +1,5 @@
+// src/app/api/progress/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, AuthenticatedContext } from '@/lib/auth-handler';
 import { supabase } from '@/lib/supabase';
@@ -7,7 +9,7 @@ const progressSchema = z.object({
   lessonId: z.string().uuid(),
   completed: z.boolean(),
   mastery: z.boolean().optional(),
-  quizScore: z.number().int().min(0).optional(),
+  quiz_score: z.number().int().min(0).optional(),
 });
 
 /**
@@ -41,7 +43,7 @@ async function postProgressHandler(req: NextRequest, context: AuthenticatedConte
   return NextResponse.json({ success: true }, { status: 200 });
 }
 
-export const POST = withAuth(postProgressHandler);
+export const POST = await withAuth(postProgressHandler);
 
 /**
  * API endpoint to retrieve all progress data for the current user.
@@ -62,4 +64,4 @@ async function getProgressHandler(req: NextRequest, context: AuthenticatedContex
   return NextResponse.json(data);
 }
 
-export const GET = withAuth(getProgressHandler);
+export const GET = await withAuth(getProgressHandler);

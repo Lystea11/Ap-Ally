@@ -1,4 +1,4 @@
-
+// src/components/LessonViewer.tsx
 "use client";
 
 import { Lesson } from "@/lib/types";
@@ -10,6 +10,9 @@ import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { PracticeQuiz } from "./PracticeQuiz";
+import { JsonTable } from './JsonTable';
+import { MermaidDiagram } from './MermaidDiagram';
+
 
 interface LessonViewerProps {
   lesson: Lesson;
@@ -35,9 +38,18 @@ export function LessonViewer({ lesson, content, onToggleComplete, nextLesson, on
         </CardHeader>
         <CardContent>
             <div className="prose prose-lg max-w-none dark:prose-invert">
-                <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                    {content.content}
-                </ReactMarkdown>
+              {content.content.map((block, index) => {
+                switch (block.type) {
+                  case 'markdown':
+                    return <ReactMarkdown key={index} remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{block.content}</ReactMarkdown>;
+                  case 'table':
+                    return <JsonTable key={index} headers={block.headers} rows={block.rows} />;
+                  case 'diagram':
+                    return <MermaidDiagram key={index} code={block.code} />;
+                  default:
+                    return null;
+                }
+              })}
             </div>
         </CardContent>
         <CardFooter>
