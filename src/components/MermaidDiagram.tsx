@@ -1,3 +1,4 @@
+// src/components/MermaidDiagram.tsx
 
 "use client";
 
@@ -14,19 +15,16 @@ const generateId = () => `mermaid-diagram-${idCounter++}`;
 
 export function MermaidDiagram({ code }: MermaidDiagramProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const id = generateId();
+  const [id] = React.useState(generateId());
 
   useEffect(() => {
-    mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
-    if (ref.current) {
-        // Ensure the code is not empty before trying to render
-        if(code) {
-          mermaid.render(id, code, (svgCode) => {
-            if (ref.current) {
-              ref.current.innerHTML = svgCode;
-            }
-          });
-        }
+    mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+    if (ref.current && code) {
+        mermaid.render(id, code, (svgCode) => {
+          if (ref.current) {
+            ref.current.innerHTML = svgCode;
+          }
+        });
     }
   }, [code, id]);
 

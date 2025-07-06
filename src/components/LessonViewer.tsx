@@ -1,17 +1,21 @@
 // src/components/LessonViewer.tsx
 "use client";
 
+import dynamic from 'next/dynamic';
 import { Lesson } from "@/lib/types";
 import type { GenerateLessonContentOutput } from "@/ai/flows/generate-lesson-content";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Circle, ArrowRight } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { PracticeQuiz } from "./PracticeQuiz";
 import { JsonTable } from './JsonTable';
-import { MermaidDiagram } from './MermaidDiagram';
+
+const MermaidDiagram = dynamic(() => import('./MermaidDiagram').then(mod => mod.MermaidDiagram), {
+  ssr: false,
+});
 
 
 interface LessonViewerProps {
@@ -34,7 +38,6 @@ export function LessonViewer({ lesson, content, onToggleComplete, nextLesson, on
       <Card>
         <CardHeader>
           <CardTitle className="font-headline text-4xl">{lesson.title}</CardTitle>
-          <CardDescription className="text-lg pt-2">{content.progress}</CardDescription>
         </CardHeader>
         <CardContent>
             <div className="prose prose-lg max-w-none dark:prose-invert">

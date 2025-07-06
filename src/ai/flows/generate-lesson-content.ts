@@ -40,7 +40,6 @@ const ContentBlockSchema = z.union([MarkdownContentSchema, TableContentSchema, D
 const GenerateLessonContentOutputSchema = z.object({
   content: z.array(ContentBlockSchema).describe('An array of content blocks, which can be of type markdown, table, or diagram.'),
   practiceQuestions: z.array(PracticeQuestionSchema).length(5).describe('An array of exactly 5 interactive practice questions.'),
-  progress: z.string().describe('A short, one-sentence summary describing the core concept of the lesson.'),
 });
 export type GenerateLessonContentOutput = z.infer<typeof GenerateLessonContentOutputSchema>;
 
@@ -72,8 +71,6 @@ Topic: {{{topic}}}
       - An array of exactly 4 multiple choice options.
       - The 0-based index of the correct answer.
       - A brief explanation of the correct answer.
-3.  **Lesson Summary ('progress' field):**
-    - Provide a short, one-sentence summary that describes the core concept of the lesson. For example: "This lesson covers the fundamental theorem of calculus."
 `,
 });
 
