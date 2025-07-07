@@ -14,7 +14,7 @@ import { PracticeQuiz } from "./PracticeQuiz";
 import { JsonTable } from './JsonTable';
 
 const MermaidDiagram = dynamic(() => import('./MermaidDiagram').then(mod => mod.MermaidDiagram), {
-  ssr: false,
+  ssr: false, // This is the crucial part
 });
 
 

@@ -63,6 +63,7 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
       try {
         const content = await getLessonContentAPI(lesson.id);
         // Add a validation check here
+        console.log("Received content from server:", content);
         if (!content || !Array.isArray(content.content)) {
             throw new Error("Received malformed lesson content from the server.");
         }
