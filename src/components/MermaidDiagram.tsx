@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
 
 interface MermaidDiagramProps {
@@ -15,7 +15,7 @@ const generateId = () => `mermaid-diagram-${idCounter++}`;
 
 export function MermaidDiagram({ code }: MermaidDiagramProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const [id] = React.useState(generateId());
+  const [id] = useState(generateId());
 
   useEffect(() => {
     mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
