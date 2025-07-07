@@ -48,7 +48,7 @@ export const getClassesAPI = (): Promise<APClass[]> => {
     return fetchWithAuth('/api/classes');
 };
 
-export const updateClassAPI = (classId: string, testDate?: string): Promise<void> => {
+export const updateClassAPI = (classId: string, testDate?: string): Promise<{success : boolean}> => {
     return fetchWithAuth(`/api/classes/${classId}`, {
         method: 'PATCH',
         body: JSON.stringify({ test_date: testDate }),

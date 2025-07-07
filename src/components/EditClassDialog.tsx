@@ -22,6 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { updateClassAPI } from "@/lib/api-client";
 
 const formSchema = z.object({
   test_date: z.date().optional(),
@@ -45,11 +46,21 @@ export function EditClassDialog({ classId, currentTestDate, onClassUpdated }: Ed
   });
 
   const onSubmit = async (data: FormValues) => {
-    // This is where you would call your API to update the class
-    console.log("Updating class:", classId, data);
+    try {
+    // Format the date as ISO string if it exists
+    const formattedDate = data.test_date ? data.test_date.toISOString() : undefined;
+    
+    // Call the API to update the class
+    await updateClassAPI(classId, formattedDate);
+    
+    // Refresh the classes list
     onClassUpdated();
     setOpen(false);
-  };
+  } catch (error) {
+    console.error("Failed to update class:", error);
+    // You might want to show an error message to the user here
+  }
+};
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

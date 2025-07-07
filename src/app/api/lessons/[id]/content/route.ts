@@ -1,4 +1,4 @@
-// src/app/api/lessons/route.ts
+// src/app/api/lessons/[id]/content/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, AuthenticatedContext } from '@/lib/auth-handler';

@@ -5,7 +5,7 @@ import { withAuth, AuthenticatedContext } from '@/lib/auth-handler';
 import { supabase } from '@/lib/supabase';
 import { z } from 'zod';
 
-const classSchema = z.object({
+export const classSchema = z.object({
   course_name: z.string().min(1),
   test_date: z.string().optional(),
 });
