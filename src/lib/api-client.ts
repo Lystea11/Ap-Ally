@@ -1,5 +1,6 @@
+// src/lib/api-client.ts
 
-import { Roadmap } from './types';
+import { Roadmap, APClass } from './types';
 import type { GenerateLessonContentOutput } from "@/ai/flows/generate-lesson-content";
 import { getAuth } from 'firebase/auth';
 
@@ -28,22 +29,54 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
         throw new Error(errorData.error || 'An unknown error occurred');
     }
 
+    if (response.status === 204) {
+        return;
+    }
+
     return response.json();
 }
 
+// Class APIs
+export const createClassAPI = (courseName: string, testDate?: string): Promise<APClass> => {
+    return fetchWithAuth('/api/classes', {
+        method: 'POST',
+        body: JSON.stringify({ course_name: courseName, test_date: testDate }),
+    });
+};
+
+export const getClassesAPI = (): Promise<APClass[]> => {
+    return fetchWithAuth('/api/classes');
+};
+
+export const updateClassAPI = (classId: string, testDate?: string): Promise<void> => {
+    return fetchWithAuth(`/api/classes/${classId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ test_date: testDate }),
+    });
+}
+
+export const deleteClassAPI = (classId: string): Promise<void> => {
+    return fetchWithAuth(`/api/classes/${classId}`, {
+        method: 'DELETE',
+    });
+}
+
+
 // Roadmap & Lesson APIs
-export const createRoadmapAPI = (roadmap: Roadmap): Promise<{ success: boolean, roadmapId: string }> => {
+export const createRoadmapAPI = (roadmap: Roadmap, classId: string): Promise<{ success: boolean, roadmapId: string }> => {
     return fetchWithAuth('/api/lessons', {
         method: 'POST',
         body: JSON.stringify({
+            ap_class_id: classId,
             courseName: roadmap.title,
             units: roadmap.units,
         }),
     });
 };
 
-export const getRoadmapAPI = (): Promise<Roadmap | null> => {
-    return fetchWithAuth('/api/lessons');
+export const getRoadmapAPI = (classId?:string): Promise<Roadmap | null> => {
+    const url = classId ? `/api/lessons?classId=${classId}` : '/api/lessons'
+    return fetchWithAuth(url);
 };
 
 export const getLessonContentAPI = (lessonId: string): Promise<GenerateLessonContentOutput> => {

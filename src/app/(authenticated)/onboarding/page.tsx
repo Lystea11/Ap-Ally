@@ -1,3 +1,4 @@
+// src/app/(authenticated)/onboarding/page.tsx
 
 "use client";
 
@@ -20,6 +21,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { QuizEngine } from "@/components/QuizEngine";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { createClassAPI } from "@/lib/api-client";
 
 const apCourses = [
   "AP Calculus AB",
@@ -38,6 +45,7 @@ const experienceLevels = ["Beginner", "Intermediate", "Advanced"];
 const formSchema = z.object({
   apCourse: z.string().min(1, "Please select a course."),
   experienceLevel: z.string().min(1, "Please select your experience level."),
+  testDate: z.date().optional(),
 });
 
 type OnboardingFormValues = z.infer<typeof formSchema>;
@@ -94,9 +102,11 @@ export default function OnboardingPage() {
     setStep(3);
     
     try {
+      const newClass = await createClassAPI(onboardingData.apCourse, onboardingData.testDate?.toISOString());
+
       const result = await generateRoadmap({ ...onboardingData, quizResults: answers });
-      await setRoadmap(result.roadmap);
-      router.push("/dashboard");
+      await setRoadmap(result.roadmap, newClass.id);
+      router.push(`/dashboard/${newClass.id}`);
     } catch (error) {
       console.error("Failed to generate or save roadmap:", error);
       toast({
@@ -146,6 +156,47 @@ export default function OnboardingPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="testDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="text-lg">AP Test Date (Optional)</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-[240px] pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) =>
+                              date < new Date() || date > new Date("2100-01-01")
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
                       <FormMessage />
                     </FormItem>
                   )}

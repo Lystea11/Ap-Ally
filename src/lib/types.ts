@@ -1,8 +1,17 @@
+// src/lib/types.ts
 
 export interface User {
   id: string;
   name: string;
   email: string;
+}
+
+export interface APClass {
+    id: string;
+    course_name: string;
+    test_date?: string;
+    created_at: string;
+    user_uid: string;
 }
 
 export interface Lesson {

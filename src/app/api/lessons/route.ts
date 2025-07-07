@@ -1,9 +1,12 @@
+// src/app/api/lessons/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, AuthenticatedContext } from '@/lib/auth-handler';
 import { supabase } from '@/lib/supabase';
 import { z } from 'zod';
 
 const createRoadmapSchema = z.object({
+  ap_class_id: z.string().uuid(),
   courseName: z.string(),
   units: z.array(
     z.object({
@@ -28,12 +31,12 @@ async function createRoadmapHandler(req: NextRequest, context: AuthenticatedCont
   if (!parseResult.success) {
     return NextResponse.json({ error: 'Invalid request body', details: parseResult.error.flatten() }, { status: 400 });
   }
-  const { courseName, units } = parseResult.data;
+  const { ap_class_id, courseName, units } = parseResult.data;
 
   // Create roadmap entry
   const { data: roadmapData, error: roadmapError } = await supabase
     .from('roadmaps')
-    .insert({ user_uid: uid, course_name: courseName })
+    .insert({ user_uid: uid, ap_class_id: ap_class_id })
     .select('id')
     .single();
 
@@ -72,53 +75,67 @@ export const POST = await withAuth(createRoadmapHandler);
  * API endpoint to retrieve all lessons for the current user, structured as a roadmap.
  */
 async function getLessonsHandler(req: NextRequest, context: AuthenticatedContext) {
-  const { uid } = context.user;
+    const { uid } = context.user;
+    const { searchParams } = new URL(req.url);
+    const classId = searchParams.get('classId');
 
-  const { data: lessons, error } = await supabase
-    .from('lessons')
-    .select('*')
-    .eq('user_uid', uid)
-    .order('unit_order', { ascending: true })
-    .order('lesson_order', { ascending: true });
-
-  if (error) {
-    console.error('Failed to fetch lessons:', error);
-    return NextResponse.json({ error: 'Failed to fetch lessons' }, { status: 500 });
-  }
-
-  // Reconstruct roadmap structure from flat lesson list
-  const roadmaps: Record<string, { title: string, units: any[] }> = {};
-
-  const { data: roadmapMetas } = await supabase.from('roadmaps').select('id, course_name').eq('user_uid', uid);
-
-  for (const lesson of lessons) {
-    const roadmapMeta = roadmapMetas?.find(r => r.id === lesson.roadmap_id);
-    if (!roadmapMeta) continue;
-
-    const roadmapTitle = roadmapMeta.course_name;
-    if (!roadmaps[lesson.roadmap_id]) {
-        roadmaps[lesson.roadmap_id] = { title: roadmapTitle, units: [] };
+    if (!classId) {
+        return NextResponse.json({error: "classId is required"}, {status: 400});
     }
 
-    let unit = roadmaps[lesson.roadmap_id].units.find(u => u.title === lesson.unit_title);
-    if (!unit) {
-      unit = { id: `unit-${lesson.unit_order}`, title: lesson.unit_title, lessons: [] };
-      roadmaps[lesson.roadmap_id].units.push(unit);
+    // A single query to get the class, its roadmap, and all its lessons.
+    const { data: apClass, error } = await supabase
+        .from('ap_classes')
+        .select(`
+            course_name,
+            roadmaps (
+                id,
+                lessons (
+                    id,
+                    title,
+                    completed,
+                    mastery,
+                    unit_title,
+                    unit_order,
+                    lesson_order
+                )
+            )
+        `)
+        .eq('id', classId)
+        .eq('user_uid', uid)
+        .single();
+    
+    if (error || !apClass || !apClass.roadmaps || apClass.roadmaps.length === 0) {
+        return NextResponse.json(null);
     }
     
-    unit.lessons.push({
-      id: lesson.id,
-      title: lesson.title,
-      completed: lesson.completed,
-      mastery: lesson.mastery,
-    });
-  }
+    const roadmap = apClass.roadmaps[0];
+    const lessons = roadmap.lessons.sort((a,b) => a.unit_order - b.unit_order || a.lesson_order - b.lesson_order);
+    
+    // Reconstruct the single roadmap from the flat lesson list
+    const reconstructedRoadmap: { title: string, units: any[] } = { title: apClass.course_name, units: [] };
+    const unitMap = new Map<string, any>();
 
-  // For this app, we usually deal with one roadmap at a time. Return the latest one.
-  // A more advanced app might return all roadmaps.
-  const latestRoadmap = Object.values(roadmaps)[0] || null;
+    for (const lesson of lessons) {
+        if (!unitMap.has(lesson.unit_title)) {
+            unitMap.set(lesson.unit_title, {
+                id: `unit-${lesson.unit_order}`,
+                title: lesson.unit_title,
+                lessons: [],
+            });
+        }
+        
+        unitMap.get(lesson.unit_title)!.lessons.push({
+            id: lesson.id,
+            title: lesson.title,
+            completed: lesson.completed,
+            mastery: lesson.mastery,
+        });
+    }
 
-  return NextResponse.json(latestRoadmap);
+    reconstructedRoadmap.units = Array.from(unitMap.values());
+    
+    return NextResponse.json(reconstructedRoadmap);
 }
 
 export const GET = await withAuth(getLessonsHandler);
