@@ -180,6 +180,3 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
         onRetryQuiz={handleRetryQuiz}
         quizResult={quizResult}
       />
-    </div>
-  );
-}

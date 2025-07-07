@@ -28,16 +28,82 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { createClassAPI } from "@/lib/api-client";
 
-const apCourses = [
-  "AP Calculus AB",
-  "AP Calculus BC",
-  "AP Statistics",
-  "AP Biology",
-  "AP Chemistry",
-  "AP Physics 1",
-  "AP Computer Science A",
-  "AP English Language",
-  "AP US History",
+const apCourseSections = [
+  {
+    label: "AP Capstone",
+    courses: [
+      "AP Seminar",
+      "AP Research"
+    ]
+  },
+  {
+    label: "Arts",
+    courses: [
+      "AP 2‑D Art and Design",
+      "AP 3‑D Art and Design",
+      "AP Drawing",
+      "AP Art History",
+      "AP Music Theory"
+    ]
+  },
+  {
+    label: "English",
+    courses: [
+      "AP English Language and Composition",
+      "AP English Literature and Composition"
+    ]
+  },
+  {
+    label: "History & Social Sciences",
+    courses: [
+      "AP African American Studies",
+      "AP Comparative Government and Politics",
+      "AP European History",
+      "AP Human Geography",
+      "AP Macroeconomics",
+      "AP Microeconomics",
+      "AP Psychology",
+      "AP United States Government and Politics",
+      "AP United States History",
+      "AP World History: Modern"
+    ]
+  },
+  {
+    label: "Math & Computer Science",
+    courses: [
+      "AP Calculus AB",
+      "AP Calculus BC",
+      "AP Precalculus",
+      "AP Statistics",
+      "AP Computer Science A",
+      "AP Computer Science Principles"
+    ]
+  },
+  {
+    label: "Sciences",
+    courses: [
+      "AP Biology",
+      "AP Chemistry",
+      "AP Environmental Science",
+      "AP Physics 1: Algebra-Based",
+      "AP Physics 2: Algebra-Based",
+      "AP Physics C: Mechanics",
+      "AP Physics C: Electricity and Magnetism"
+    ]
+  },
+  {
+    label: "World Languages & Cultures",
+    courses: [
+      "AP Chinese Language and Culture",
+      "AP French Language and Culture",
+      "AP German Language and Culture",
+      "AP Italian Language and Culture",
+      "AP Japanese Language and Culture",
+      "AP Latin",
+      "AP Spanish Language and Culture",
+      "AP Spanish Literature and Culture"
+    ]
+  },
 ];
 
 const experienceLevels = ["Beginner", "Intermediate", "Advanced"];
@@ -145,17 +211,32 @@ export default function OnboardingPage() {
                     <FormItem>
                       <FormLabel className="text-lg">Which AP course are you taking?</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a course" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {apCourses.map((course) => (
-                            <SelectItem key={course} value={course}>{course}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a course" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {apCourseSections.map((section) => (
+                          <div key={section.label}>
+                            <div
+                              className="px-3 py-2 text-xs font-bold text-muted-foreground uppercase tracking-wider select-none pointer-events-none bg-secondary/70 rounded-t-2xl"
+                              style={{
+                                letterSpacing: "0.08em",
+                                marginTop: section.label === "AP Capstone" ? 0 : "0.75rem"
+                              }}
+                            >
+                              {section.label}
+                            </div>
+                            {section.courses.map((course) => (
+                              <SelectItem key={course} value={course}>
+                                {course}
+                              </SelectItem>
+                            ))}
+                          </div>
+                        ))}
+                      </SelectContent>
+                    </Select>
                       <FormMessage />
                     </FormItem>
                   )}
