@@ -36,11 +36,8 @@ export function LessonViewer({ lesson, content, onToggleComplete, nextLesson, on
   return (
     <div className="space-y-8">
       <Card>
-        <CardHeader>
-          <CardTitle className="font-headline text-4xl">{lesson.title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <div className="prose prose-lg max-w-none dark:prose-invert">
+          <CardContent>
+            <div className="prose prose-lg pt-8 max-w-none dark:prose-invert">
               {content.content.map((block, index) => {
                 switch (block.type) {
                   case 'markdown':
@@ -54,7 +51,7 @@ export function LessonViewer({ lesson, content, onToggleComplete, nextLesson, on
                 }
               })}
             </div>
-        </CardContent>
+          </CardContent>
         <CardFooter>
           <Button onClick={onToggleComplete} size="lg" disabled={!lesson.completed && !canComplete}>
             {lesson.completed ? (

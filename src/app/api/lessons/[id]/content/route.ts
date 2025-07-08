@@ -9,6 +9,7 @@ async function getLessonContentHandler(req: NextRequest, context: AuthenticatedC
     const params = await context.params; // Correctly await the params
     const { id } = params;
     const { uid } = context.user;
+    
 
     // First, verify the user has access to this lesson
     const { data: lesson, error: lessonError } = await supabase
@@ -34,6 +35,18 @@ async function getLessonContentHandler(req: NextRequest, context: AuthenticatedC
 
         // Store the generated content in the cache
         cache.set(id, generatedContent);
+        
+        // NEW CODE: Update the content column in the lessons table
+        const { error: updateError } = await supabase
+            .from('lessons')
+            .update({ content: generatedContent })
+            .eq('id', id)
+            .eq('user_uid', uid);
+            
+        if (updateError) {
+            console.error('Failed to update lesson content in database:', updateError);
+            // Continue anyway since we have the content in memory
+        }
 
         return NextResponse.json(generatedContent);
     } catch (error) {
