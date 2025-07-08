@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -15,6 +15,24 @@ export function LandingPageClient() {
   const router = useRouter();
   const { toast } = useToast();
   const hasTriedLogin = useRef(false);
+  const isInitialRender = useRef(true);
+
+  // Automatically redirect to dashboard after successful login
+  useEffect(() => {
+    // Only redirect if user just logged in (not if they navigated to landing page while logged in)
+    if (isAuthenticated && hasTriedLogin.current) {
+      router.push("/dashboard");
+    }
+    
+    // Handle initial load when user is already authenticated
+    if (isAuthenticated && isInitialRender.current) {
+      isInitialRender.current = false;
+      // Check if we're on the root path and not coming from another page
+      if (window.location.pathname === "/" && document.referrer === "") {
+        router.push("/dashboard");
+      }
+    }
+  }, [isAuthenticated, router]);
 
   const handleGetStarted = () => {
     hasTriedLogin.current = true;

@@ -12,10 +12,20 @@ CREATE TABLE users (
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
+-- AP Classes table
+CREATE TABLE ap_classes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_uid TEXT NOT NULL REFERENCES users(uid) ON DELETE CASCADE,
+  course_name TEXT NOT NULL,
+  test_date TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
 -- Roadmaps table to group lessons for a specific study plan
 CREATE TABLE roadmaps (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_uid TEXT NOT NULL REFERENCES users(uid) ON DELETE CASCADE,
+  ap_class_id UUID NOT NULL REFERENCES ap_classes(id) ON DELETE CASCADE,
   course_name TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
@@ -46,8 +56,19 @@ CREATE TABLE course_mastery (
   UNIQUE(user_uid, course_name) -- Each user can only have one mastery entry per course
 );
 
+-- Goals table
+CREATE TABLE goals (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_uid TEXT NOT NULL REFERENCES users(uid) ON DELETE CASCADE,
+  text TEXT NOT NULL,
+  completed BOOLEAN DEFAULT false NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
 -- Create indexes for frequently queried columns
 CREATE INDEX idx_roadmaps_user_uid ON roadmaps(user_uid);
 CREATE INDEX idx_lessons_roadmap_id ON lessons(roadmap_id);
 CREATE INDEX idx_lessons_user_uid ON lessons(user_uid);
 CREATE INDEX idx_course_mastery_user_uid ON course_mastery(user_uid);
+CREATE INDEX idx_goals_user_uid ON goals(user_uid);
+CREATE INDEX idx_ap_classes_user_uid ON ap_classes(user_uid);

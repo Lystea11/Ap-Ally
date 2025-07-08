@@ -58,6 +58,8 @@ Topic: {{{topic}}}
 **Instructions:**
 1.  **Lesson Content ('content' field):**
     - Generate the lesson as an array of content blocks. Each block must have a 'type'.
+    - The 'content' field must only include the Title of the lesson once.
+    - The 'type' can be either 'markdown', 'table', or 'diagram'.
     - For regular text, use \`{ "type": "markdown", "content": "..." }\`. Use Markdown for formatting (subheadings, lists, bold).
     - **For tables, use the JSON format:** \`{ "type": "table", "headers": ["Header 1", "Header 2"], "rows": [["Row 1 Col 1", "Row 1 Col 2"], ["Row 2 Col 1", "Row 2 Col 2"]] }\`. This is crucial for correct rendering.
     - **For diagrams, use the Mermaid format:** \`{ "type": "diagram", "diagramType": "mermaid", "code": "graph TD; A-->B;" }\`.

@@ -95,3 +95,28 @@ export const updateProgressAPI = (lessonId: string, completed: boolean, mastery?
         body: JSON.stringify(payload),
     });
 };
+
+// Goals APIs
+export const getGoalsAPI = (): Promise<any[]> => {
+    return fetchWithAuth('/api/goals');
+};
+
+export const createGoalAPI = (text: string): Promise<any> => {
+    return fetchWithAuth('/api/goals', {
+        method: 'POST',
+        body: JSON.stringify({ text }),
+    });
+};
+
+export const updateGoalAPI = (goalId: string, data: { completed: boolean }): Promise<any> => {
+    return fetchWithAuth(`/api/goals/${goalId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+    });
+};
+
+export const deleteGoalAPI = (goalId: string): Promise<void> => {
+    return fetchWithAuth(`/api/goals/${goalId}`, {
+        method: 'DELETE',
+    });
+};

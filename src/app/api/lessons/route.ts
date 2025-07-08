@@ -36,7 +36,7 @@ async function createRoadmapHandler(req: NextRequest, context: AuthenticatedCont
   // Create roadmap entry
   const { data: roadmapData, error: roadmapError } = await supabase
     .from('roadmaps')
-    .insert({ user_uid: uid, ap_class_id: ap_class_id })
+    .insert({ user_uid: uid, ap_class_id: ap_class_id, course_name: courseName })
     .select('id')
     .single();
 
