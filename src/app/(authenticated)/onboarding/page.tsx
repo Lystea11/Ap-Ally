@@ -21,6 +21,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { QuizEngine } from "@/components/QuizEngine";
+import { RoadmapRecap } from "@/components/RoadmapRecap";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
@@ -106,11 +107,8 @@ const apCourseSections = [
   },
 ];
 
-const experienceLevels = ["Beginner", "Intermediate", "Advanced"];
-
 const formSchema = z.object({
   apCourse: z.string().min(1, "Please select a course."),
-  experienceLevel: z.string().min(1, "Please select your experience level."),
   testDate: z.date().optional(),
 });
 
@@ -126,22 +124,24 @@ export default function OnboardingPage() {
   const [loadingMessage, setLoadingMessage] = useState("");
   const [quizData, setQuizData] = useState<GenerateQuizOutput | null>(null);
   const [onboardingData, setOnboardingData] = useState<OnboardingFormValues | null>(null);
+  const [quizAnswers, setQuizAnswers] = useState<string>("");
+  const [generatedRoadmap, setGeneratedRoadmap] = useState<any>(null);
+  const [newClassId, setNewClassId] = useState<string>("");
   
   const form = useForm<OnboardingFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       apCourse: "",
-      experienceLevel: "",
     },
   });
 
   const handleStep1Submit = async (data: OnboardingFormValues) => {
     setLoading(true);
-    setLoadingMessage("Generating a quick quiz to assess your knowledge...");
+    setLoadingMessage("Generating a comprehensive diagnostic quiz to assess your knowledge across different AP topics...");
     setOnboardingData(data);
     
     try {
-      const result = await generateQuiz(data);
+      const result = await generateQuiz({ apCourse: data.apCourse });
       if (!result?.questions?.length) {
         throw new Error("AI failed to generate quiz questions.");
       }
@@ -165,14 +165,15 @@ export default function OnboardingPage() {
     
     setLoading(true);
     setLoadingMessage("Generating your personalized study roadmap...");
-    setStep(3);
+    setQuizAnswers(answers);
     
     try {
       const newClass = await createClassAPI(onboardingData.apCourse, onboardingData.testDate?.toISOString());
-
-      const result = await generateRoadmap({ ...onboardingData, quizResults: answers });
-      await setRoadmap(result.roadmap, newClass.id);
-      router.push(`/dashboard/${newClass.id}`);
+      const result = await generateRoadmap({ apCourse: onboardingData.apCourse, quizResults: answers });
+      
+      setGeneratedRoadmap(result.roadmap);
+      setNewClassId(newClass.id);
+      setStep(3);
     } catch (error) {
       console.error("Failed to generate or save roadmap:", error);
       toast({
@@ -186,6 +187,22 @@ export default function OnboardingPage() {
     }
   };
 
+  const handleStartJourney = async () => {
+    if (!generatedRoadmap || !newClassId) return;
+    
+    try {
+      await setRoadmap(generatedRoadmap, newClassId);
+      router.push(`/dashboard/${newClassId}?guide=true`);
+    } catch (error) {
+      console.error("Failed to save roadmap:", error);
+      toast({
+        title: "Error",
+        description: "Could not save your roadmap. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const progressValue = (step / 3) * 100;
 
   return (
@@ -195,9 +212,10 @@ export default function OnboardingPage() {
           <Progress value={progressValue} className="mb-4 h-2" />
           <CardTitle className="font-headline text-3xl">Let's get you set up</CardTitle>
           <CardDescription>
-            {step === 1 && "Tell us about your learning goals to create your personalized plan."}
-            {step === 2 && "Answer a few questions to gauge your current knowledge."}
-            {step === 3 && "Please wait while we tailor your study plan."}
+            {step === 1 && "Select your AP course and test date to begin your personalized study journey."}
+            {step === 2 && "Take a comprehensive diagnostic quiz to assess your knowledge across different units and skills."}
+            {step === 3 && !loading && "Here's your personalized study plan based on your diagnostic results."}
+            {step === 3 && loading && "Please wait while we create your personalized study plan based on your diagnostic results."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -282,30 +300,8 @@ export default function OnboardingPage() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="experienceLevel"
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormLabel className="text-lg">What is your experience level?</FormLabel>
-                      <FormControl>
-                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1">
-                          {experienceLevels.map((level) => (
-                            <FormItem key={level} className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem value={level} />
-                              </FormControl>
-                              <FormLabel className="font-normal">{level}</FormLabel>
-                            </FormItem>
-                          ))}
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
                 <Button type="submit" disabled={loading} size="lg">
-                  {loading ? <LoadingSpinner /> : "Next: Take Quiz"}
+                  {loading ? <LoadingSpinner /> : "Next: Take Diagnostic Quiz"}
                 </Button>
               </form>
             </FormProvider>
@@ -315,7 +311,15 @@ export default function OnboardingPage() {
             <QuizEngine quiz={quizData} onSubmit={handleQuizSubmit} />
           )}
 
-          {(loading && (step === 1 || step === 3)) && (
+          {step === 3 && !loading && generatedRoadmap && (
+            <RoadmapRecap 
+              roadmap={generatedRoadmap}
+              quizResults={quizAnswers}
+              onStartJourney={handleStartJourney}
+            />
+          )}
+
+          {loading && (
             <div className="flex flex-col items-center justify-center gap-4 py-8">
               <LoadingSpinner className="h-16 w-16" />
               <p className="text-lg text-muted-foreground">{loadingMessage}</p>

@@ -15,22 +15,13 @@ export function LandingPageClient() {
   const router = useRouter();
   const { toast } = useToast();
   const hasTriedLogin = useRef(false);
-  const isInitialRender = useRef(true);
+  const redirectedAfterLogin = useRef(false);
 
-  // Automatically redirect to dashboard after successful login
   useEffect(() => {
-    // Only redirect if user just logged in (not if they navigated to landing page while logged in)
-    if (isAuthenticated && hasTriedLogin.current) {
-      router.push("/dashboard");
-    }
-    
-    // Handle initial load when user is already authenticated
-    if (isAuthenticated && isInitialRender.current) {
-      isInitialRender.current = false;
-      // Check if we're on the root path and not coming from another page
-      if (window.location.pathname === "/" && document.referrer === "") {
-        router.push("/dashboard");
-      }
+    // Redirect immediately if user just logged in via popup
+    if (isAuthenticated && hasTriedLogin.current && !redirectedAfterLogin.current) {
+      redirectedAfterLogin.current = true;
+      router.push("/onboarding");
     }
   }, [isAuthenticated, router]);
 
@@ -45,20 +36,21 @@ export function LandingPageClient() {
       });
     });
   };
-  
+
   const handleStartStudying = () => {
     router.push("/dashboard");
   };
 
   if (loading) {
-     return (
-        <div className="flex h-11 items-center justify-center">
-            <LoadingSpinner />
-        </div>
-    )
+    return (
+      <div className="flex h-11 items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
   }
-  
+
   if (isAuthenticated) {
+    // Show "Start Studying" button if user is already logged in
     return (
       <Button
         size="lg"
@@ -68,7 +60,7 @@ export function LandingPageClient() {
         <GraduationCap className="mr-2 h-5 w-5" />
         Start Studying!
       </Button>
-    )
+    );
   }
 
   return (

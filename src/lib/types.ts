@@ -28,11 +28,12 @@ export interface Unit {
 }
 
 export interface Roadmap {
+  id: string;
   title: string;
   units: Unit[];
 }
 
 export interface OnboardingState {
   apCourse: string;
-  experienceLevel: string;
+  testDate?: string;
 }

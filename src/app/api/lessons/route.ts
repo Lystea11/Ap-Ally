@@ -87,6 +87,7 @@ async function getLessonsHandler(req: NextRequest, context: AuthenticatedContext
     const { data: apClass, error } = await supabase
         .from('ap_classes')
         .select(`
+            id,
             course_name,
             roadmaps (
                 id,
@@ -113,7 +114,11 @@ async function getLessonsHandler(req: NextRequest, context: AuthenticatedContext
     const lessons = roadmap.lessons.sort((a,b) => a.unit_order - b.unit_order || a.lesson_order - b.lesson_order);
     
     // Reconstruct the single roadmap from the flat lesson list
-    const reconstructedRoadmap: { title: string, units: any[] } = { title: apClass.course_name, units: [] };
+    const reconstructedRoadmap: { id: string, title: string, units: any[] } = { 
+        id: apClass.id, 
+        title: apClass.course_name, 
+        units: [] 
+    };
     const unitMap = new Map<string, any>();
 
     for (const lesson of lessons) {

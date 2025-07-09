@@ -36,11 +36,12 @@ export function RoadmapViewer({ roadmap }: RoadmapViewerProps) {
               </AccordionTrigger>
               <AccordionContent>
                 <ul className="space-y-2 pl-4">
-                  {unit.lessons.map((lesson) => (
+                  {unit.lessons.map((lesson, lessonIndex) => (
                     <li key={lesson.id}>
                       <Link
                         href={`/lesson/${lesson.id}`}
                         className="group flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-accent/50"
+                        data-guide={lessonIndex === 0 && index === 0 ? "lesson-item" : undefined}
                       >
                         {lesson.completed ? (
                           <CheckCircle2 className="h-5 w-5 text-green-500" />

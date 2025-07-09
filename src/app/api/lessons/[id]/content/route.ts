@@ -11,10 +11,10 @@ async function getLessonContentHandler(req: NextRequest, context: AuthenticatedC
     const { uid } = context.user;
     
 
-    // First, verify the user has access to this lesson
+    // First, verify the user has access to this lesson and get existing content
     const { data: lesson, error: lessonError } = await supabase
         .from('lessons')
-        .select('id, title, roadmap_id')
+        .select('id, title, roadmap_id, content')
         .eq('id', id)
         .eq('user_uid', uid)
         .single();
@@ -29,7 +29,14 @@ async function getLessonContentHandler(req: NextRequest, context: AuthenticatedC
         return NextResponse.json(cachedContent);
     }
 
-    // If not in cache, generate it
+    // Check if lesson already has content in database
+    if (lesson.content && lesson.content.content && Array.isArray(lesson.content.content)) {
+        // Store existing content in cache for faster future access
+        cache.set(id, lesson.content);
+        return NextResponse.json(lesson.content);
+    }
+
+    // If not in cache or database, generate it
     try {
         const generatedContent = await generateLessonContent({ topic: lesson.title });
 

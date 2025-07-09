@@ -13,7 +13,6 @@ import {z} from 'genkit';
 
 const GenerateQuizInputSchema = z.object({
   apCourse: z.string().describe('The name of the AP course.'),
-  experienceLevel: z.string().describe('The experience level of the student (e.g., beginner, intermediate, advanced).'),
 });
 export type GenerateQuizInput = z.infer<typeof GenerateQuizInputSchema>;
 
@@ -21,7 +20,9 @@ const GenerateQuizOutputSchema = z.object({
   questions: z.array(z.object({
     question: z.string().describe('The text of the quiz question.'),
     options: z.array(z.string()).describe('An array of 4 multiple choice options.'),
-  })).describe('An array of 3 to 5 quiz questions.'),
+    unit: z.string().describe('The unit/topic this question assesses.'),
+    skill: z.string().describe('The specific skill or concept being tested.'),
+  })).describe('An array of 8-12 quiz questions covering different units and skills.'),
 });
 export type GenerateQuizOutput = z.infer<typeof GenerateQuizOutputSchema>;
 
@@ -33,10 +34,24 @@ const prompt = ai.definePrompt({
   name: 'generateQuizPrompt',
   input: {schema: GenerateQuizInputSchema},
   output: {schema: GenerateQuizOutputSchema},
-  prompt: `You are an expert AP tutor. Generate a short quiz with 3-5 multiple choice questions to assess the student's current knowledge based on the selected AP course and experience level. For each question, provide 4 options.
+  prompt: `You are an expert AP tutor. Generate a comprehensive diagnostic quiz with 8-12 multiple choice questions to assess the student's knowledge across different units and skills in the AP course. This quiz should cover the major topics and skills that will be tested on the AP exam.
 
   AP Course: {{{apCourse}}}
-  Experience Level: {{{experienceLevel}}}
+
+  Create questions that:
+  1. Cover different units/topics from the AP curriculum
+  2. Test various skills (knowledge, analysis, application, synthesis)
+  3. Range from foundational to advanced concepts
+  4. Are appropriate for the AP level
+  5. Each question should clearly indicate which unit/topic and skill it assesses
+
+  For each question, provide:
+  - A clear, well-written question
+  - 4 multiple choice options with one correct answer
+  - The specific unit/topic it covers
+  - The skill or concept being tested
+
+  This diagnostic will help create a personalized study plan based on the student's strengths and weaknesses across different areas.
 `,
 });
 

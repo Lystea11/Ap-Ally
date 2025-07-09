@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 
 interface QuizEngineProps {
   quiz: GenerateQuizOutput;
@@ -49,7 +51,7 @@ export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
     const formattedAnswers = Object.entries(answers)
       .map(([questionIndex, answer]) => {
         const question = quiz.questions[parseInt(questionIndex)];
-        return `Question: ${question?.question}\nAnswer: ${answer}`;
+        return `Question: ${question?.question}\nUnit: ${question?.unit}\nSkill: ${question?.skill}\nAnswer: ${answer}`;
       })
       .join("\n\n");
     onSubmit(formattedAnswers);
@@ -62,12 +64,26 @@ export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
     return null;
   }
 
+  const progressValue = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
+
   return (
     <div className="space-y-6">
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span>Diagnostic Quiz Progress</span>
+          <span>{currentQuestionIndex + 1} of {quiz.questions.length}</span>
+        </div>
+        <Progress value={progressValue} className="h-2" />
+      </div>
+      
       <Card>
         <CardHeader>
+          <div className="flex items-center gap-2 mb-2">
+            <Badge variant="secondary">{currentQuestion.unit}</Badge>
+            <Badge variant="outline">{currentQuestion.skill}</Badge>
+          </div>
           <CardTitle className="font-headline text-xl">
-            Question {currentQuestionIndex + 1} / {quiz.questions.length}
+            Question {currentQuestionIndex + 1}
           </CardTitle>
           <CardDescription className="text-lg pt-2">{currentQuestion.question}</CardDescription>
         </CardHeader>

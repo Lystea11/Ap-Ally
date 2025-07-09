@@ -11,8 +11,12 @@ import type { GenerateLessonContentOutput } from "@/ai/flows/generate-lesson-con
 import { LessonViewer } from "@/components/LessonViewer";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronRight, Clock, CheckCircle, AlertCircle, BookOpen, Target, Trophy, ArrowRight, ChevronDown } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Lesson } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 
@@ -27,9 +31,9 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
   const [quizResult, setQuizResult] = useState<{ correct: number, total: number } | null>(null);
   const fetchedLessonIdRef = useRef<string | null>(null);
 
-  const { lesson, nextLesson } = useMemo(() => {
+  const { lesson, nextLesson, previousLesson, currentUnit, progressData } = useMemo(() => {
     if (!roadmap || !lessonId) {
-      return { lesson: null, nextLesson: null };
+      return { lesson: null, nextLesson: null, previousLesson: null, currentUnit: null, progressData: null };
     }
 
     const allLessons = roadmap.units.flatMap((unit) => unit.lessons);
@@ -37,15 +41,41 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
 
     let currentLesson: Lesson | null = null;
     let nextLessonResult: Lesson | null = null;
+    let previousLessonResult: Lesson | null = null;
+    let unitForLesson = null;
 
     if (currentLessonIndex !== -1) {
       currentLesson = allLessons[currentLessonIndex];
       if (currentLessonIndex < allLessons.length - 1) {
         nextLessonResult = allLessons[currentLessonIndex + 1];
       }
+      if (currentLessonIndex > 0) {
+        previousLessonResult = allLessons[currentLessonIndex - 1];
+      }
+      
+      // Find the unit that contains this lesson
+      unitForLesson = roadmap.units.find(unit => 
+        unit.lessons.some(lesson => lesson.id === lessonId)
+      );
     }
 
-    return { lesson: currentLesson, nextLesson: nextLessonResult };
+    // Calculate progress data
+    const completedLessons = allLessons.filter(l => l.completed).length;
+    const totalLessons = allLessons.length;
+    const progressPercentage = Math.round((completedLessons / totalLessons) * 100);
+
+    return { 
+      lesson: currentLesson, 
+      nextLesson: nextLessonResult, 
+      previousLesson: previousLessonResult,
+      currentUnit: unitForLesson,
+      progressData: {
+        completed: completedLessons,
+        total: totalLessons,
+        percentage: progressPercentage,
+        currentIndex: currentLessonIndex + 1
+      }
+    };
   }, [roadmap, lessonId]);
 
   useEffect(() => {
@@ -132,11 +162,37 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
 
   if (isLoadingState) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4 text-center">
-        <LoadingSpinner className="h-16 w-16" />
-        <p className="text-lg text-muted-foreground">
-          {`Generating your lesson on "${lesson?.title || 'this topic'}"...`}
-        </p>
+      <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-6 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <LoadingSpinner className="h-16 w-16" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <BookOpen className="h-8 w-8 text-primary animate-pulse" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <p className="text-lg font-medium text-foreground">
+              {`Generating your lesson on "${lesson?.title || 'this topic'}"`}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Our AI is creating personalized content just for you...
+            </p>
+          </div>
+        </div>
+        
+        {progressData && (
+          <Card className="w-full max-w-md bg-card/60 backdrop-blur border-border/40">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Overall Progress</span>
+                <span className="text-sm text-muted-foreground">
+                  {progressData.completed}/{progressData.total} lessons
+                </span>
+              </div>
+              <Progress value={progressData.percentage} className="h-2" />
+            </CardContent>
+          </Card>
+        )}
       </div>
     );
   }
@@ -145,17 +201,29 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
   if (error || !lessonContent?.content) { 
     return (
       <div className="container mx-auto py-8 text-center">
-        <Card className="max-w-md mx-auto">
+        <Card className="max-w-md mx-auto bg-card/60 backdrop-blur border-destructive/20">
           <CardHeader>
-            <CardTitle className="font-headline text-2xl text-destructive">Error</CardTitle>
+            <div className="flex items-center justify-center w-16 h-16 bg-destructive/10 rounded-full mx-auto mb-4">
+              <AlertCircle className="h-8 w-8 text-destructive" />
+            </div>
+            <CardTitle className="font-headline text-2xl text-destructive">Something went wrong</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p>{error || "Lesson content could not be loaded."}</p>
-            <Button asChild variant="outline" className="mt-4">
-              <Link href="/dashboard">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Go back to Dashboard
-              </Link>
-            </Button>
+          <CardContent className="space-y-4">
+            <p className="text-foreground/70">{error || "Lesson content could not be loaded."}</p>
+            <div className="flex flex-col gap-2">
+              <Button asChild variant="outline">
+                <Link href="/dashboard">
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Go back to Dashboard
+                </Link>
+              </Button>
+              <Button 
+                variant="ghost" 
+                onClick={() => window.location.reload()}
+                className="text-sm"
+              >
+                Try again
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -163,24 +231,197 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-8">
-        <Button asChild variant="outline">
-          <Link href="/dashboard">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Link>
-        </Button>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Header Navigation */}
+      <div className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button asChild variant="ghost" size="sm">
+                <Link href={roadmap ? `/dashboard/${roadmap.id}` : "/dashboard"}>
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Roadmap
+                </Link>
+              </Button>
+              
+              {currentUnit && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-auto p-1 text-sm hover:bg-muted">
+                        <span className="max-w-[120px] truncate">{currentUnit.title}</span>
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-60">
+                      {currentUnit.lessons.map((unitLesson) => (
+                        <DropdownMenuItem key={unitLesson.id} asChild>
+                          <Link 
+                            href={`/lesson/${unitLesson.id}`}
+                            className={`flex items-center gap-2 ${unitLesson.id === lessonId ? 'bg-accent' : ''}`}
+                          >
+                            <div className="flex items-center gap-2 flex-1 overflow-hidden">
+                              {unitLesson.completed && (
+                                <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
+                              )}
+                              <span className="truncate block max-w-full">{unitLesson.title}</span>
+                            </div>
+                            {unitLesson.id === lessonId && (
+                              <div className="w-2 h-2 bg-primary rounded-full shrink-0" />
+                            )}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <ChevronRight className="h-4 w-4" />
+                  <span className="font-medium text-foreground max-w-[200px] truncate">{lesson?.title}</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-4">
+              {progressData && (
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Target className="h-4 w-4 text-primary" />
+                    <span className="font-medium">
+                      {progressData.currentIndex}/{progressData.total}
+                    </span>
+                  </div>
+                  <Progress value={progressData.percentage} className="w-20 h-2" />
+                  <span className="text-xs text-muted-foreground">
+                    {progressData.percentage}%
+                  </span>
+                </div>
+              )}
+              
+              {lesson?.completed && (
+                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Completed
+                </Badge>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
-      <LessonViewer
-        lesson={lesson}
-        content={lessonContent}
-        onToggleComplete={handleMarkAsComplete}
-        nextLesson={nextLesson}
-        onQuizComplete={handleQuizComplete}
-        onRetryQuiz={handleRetryQuiz}
-        quizResult={quizResult}
-      />
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Sidebar Navigation */}
+          <div className="lg:col-span-1">
+            <Card className="sticky top-24 bg-card/60 backdrop-blur border-border/40">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <BookOpen className="h-5 w-5" />
+                  Lesson Navigation
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Previous Lesson */}
+                {previousLesson && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      Previous
+                    </p>
+                    <Button asChild variant="ghost" size="sm" className="w-full justify-start h-auto p-3">
+                      <Link href={`/lesson/${previousLesson.id}`}>
+                        <div className="flex items-center gap-2 w-full">
+                          <ArrowLeft className="h-4 w-4 shrink-0" />
+                          <div className="text-left w-full overflow-hidden">
+                            <p className="font-medium text-sm truncate block">{previousLesson.title}</p>
+                            <p className="text-xs text-muted-foreground">Continue from here</p>
+                          </div>
+                        </div>
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+                
+                {/* Current Lesson */}
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Current
+                  </p>
+                  <div className="p-3 bg-purple-100/60 rounded-lg border border-purple-200/50">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+                      <div>
+                        <p className="font-medium text-sm">{lesson?.title}</p>
+                        <p className="text-xs text-muted-foreground">In progress</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Next Lesson */}
+                {nextLesson && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      Next
+                    </p>
+                    <Button 
+                      asChild 
+                      variant="ghost" 
+                      size="sm" 
+                      className="w-full justify-start h-auto p-3"
+                      disabled={!lesson?.completed}
+                    >
+                      <Link href={`/lesson/${nextLesson.id}`}>
+                        <div className="flex items-center gap-2 w-full">
+                          <div className="text-left w-full overflow-hidden">
+                            <p className="font-medium text-sm truncate block">{nextLesson.title}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {lesson?.completed ? "Ready to start" : "Complete current lesson first"}
+                            </p>
+                          </div>
+                          <ArrowRight className="h-4 w-4 shrink-0" />
+                        </div>
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+                
+                <Separator />
+                
+                {/* Quiz Status */}
+                {quizResult && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      Quiz Results
+                    </p>
+                    <div className="p-3 bg-secondary/50 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Trophy className="h-4 w-4 text-yellow-500" />
+                        <span className="font-medium text-sm">
+                          {quizResult.correct}/{quizResult.total} correct
+                        </span>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {quizResult.correct >= 4 ? "Great job! You passed!" : "Keep practicing to improve"}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Main Content */}
+          <div className="lg:col-span-3">
+            <LessonViewer
+              lesson={lesson}
+              content={lessonContent}
+              onToggleComplete={handleMarkAsComplete}
+              nextLesson={nextLesson}
+              onQuizComplete={handleQuizComplete}
+              onRetryQuiz={handleRetryQuiz}
+              quizResult={quizResult}
+            />
+          </div>
+        </div>
       </div>
+    </div>
   );
 }
