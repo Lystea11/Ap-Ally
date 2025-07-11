@@ -178,6 +178,11 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
                     Submit Quiz
                 </Button>
             )}
+            {submitted && (
+              <Button onClick={() => onQuizComplete({ correct: resultStats?.correctCount ?? 0, total: resultStats?.totalCount ?? 0})}>
+                Close
+              </Button>
+            )}
         </div>
       </CardContent>
     </Card>

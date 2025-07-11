@@ -26,7 +26,20 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Request failed with status: ' + response.status }));
-        throw new Error(errorData.error || 'An unknown error occurred');
+        
+        // Enhanced error handling for AI-related errors
+        const errorMessage = errorData.error || 'An unknown error occurred';
+        if (response.status === 429) {
+            throw new Error('Rate limit exceeded. Please try again in a moment.');
+        }
+        if (response.status >= 500) {
+            throw new Error('Service temporarily unavailable. Please try again.');
+        }
+        if (errorMessage.toLowerCase().includes('overload')) {
+            throw new Error('Model overloaded. Please try again in a moment.');
+        }
+        
+        throw new Error(errorMessage);
     }
 
     if (response.status === 204) {
@@ -119,4 +132,49 @@ export const deleteGoalAPI = (goalId: string): Promise<void> => {
     return fetchWithAuth(`/api/goals/${goalId}`, {
         method: 'DELETE',
     });
+};
+
+// Practice Quiz APIs
+export const generatePracticeQuizAPI = (quizRequest: {
+    apCourse: string;
+    format: 'mcq' | 'leq' | 'laq' | 'mixed';
+    units: string[];
+    questionCount: number;
+    difficulty: 'easy' | 'medium' | 'hard' | 'mixed';
+}): Promise<any> => {
+    return fetchWithAuth('/api/practice-quiz/generate', {
+        method: 'POST',
+        body: JSON.stringify(quizRequest),
+    });
+};
+
+export const generateQuizFeedbackAPI = (feedbackRequest: {
+    apCourse: string;
+    quizData: any;
+    answers: Record<string, string>;
+}): Promise<any> => {
+    return fetchWithAuth('/api/practice-quiz/feedback', {
+        method: 'POST',
+        body: JSON.stringify(feedbackRequest),
+    });
+};
+
+export const saveQuizResultAPI = (quizResult: {
+    classId: string;
+    quizTitle: string;
+    quizFormat: string;
+    overallScore: number;
+    questionsAnswered: number;
+    totalQuestions: number;
+    timeSpent?: number;
+    units: string[];
+}): Promise<any> => {
+    return fetchWithAuth('/api/practice-quiz/results', {
+        method: 'POST',
+        body: JSON.stringify(quizResult),
+    });
+};
+
+export const getQuizResultsAPI = (classId: string): Promise<{ results: any[] }> => {
+    return fetchWithAuth(`/api/practice-quiz/results?classId=${classId}`);
 };

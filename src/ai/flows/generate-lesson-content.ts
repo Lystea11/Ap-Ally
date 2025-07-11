@@ -3,6 +3,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { withAIResilience } from '@/lib/ai-resilience';
 
 const GenerateLessonContentInputSchema = z.object({
   topic: z.string().describe('The topic for which to generate lesson content.'),
@@ -44,7 +45,14 @@ const GenerateLessonContentOutputSchema = z.object({
 export type GenerateLessonContentOutput = z.infer<typeof GenerateLessonContentOutputSchema>;
 
 export async function generateLessonContent(input: GenerateLessonContentInput): Promise<GenerateLessonContentOutput> {
-  return generateLessonContentFlow(input);
+  return withAIResilience(
+    () => generateLessonContentFlow(input),
+    {
+      priority: 'high',
+      timeout: 240000, // 4 minutes for lesson content generation
+      fallbackModel: 'googleai/gemini-1.5-flash'
+    }
+  );
 }
 
 const prompt = ai.definePrompt({

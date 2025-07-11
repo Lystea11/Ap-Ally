@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { withAIResilience } from '@/lib/ai-resilience';
 
 const GenerateQuizInputSchema = z.object({
   apCourse: z.string().describe('The name of the AP course.'),
@@ -20,6 +21,7 @@ const GenerateQuizOutputSchema = z.object({
   questions: z.array(z.object({
     question: z.string().describe('The text of the quiz question.'),
     options: z.array(z.string()).describe('An array of 4 multiple choice options.'),
+    correct_answer: z.string().describe('The correct answer from the options array.'),
     unit: z.string().describe('The unit/topic this question assesses.'),
     skill: z.string().describe('The specific skill or concept being tested.'),
   })).describe('An array of 8-12 quiz questions covering different units and skills.'),
@@ -27,7 +29,14 @@ const GenerateQuizOutputSchema = z.object({
 export type GenerateQuizOutput = z.infer<typeof GenerateQuizOutputSchema>;
 
 export async function generateQuiz(input: GenerateQuizInput): Promise<GenerateQuizOutput> {
-  return generateQuizFlow(input);
+  return withAIResilience(
+    () => generateQuizFlow(input),
+    {
+      priority: 'high',
+      timeout: 180000, // 3 minutes for quiz generation
+      fallbackModel: 'googleai/gemini-1.5-flash' // Fallback to lighter model
+    }
+  );
 }
 
 const prompt = ai.definePrompt({
@@ -48,6 +57,7 @@ const prompt = ai.definePrompt({
   For each question, provide:
   - A clear, well-written question
   - 4 multiple choice options with one correct answer
+  - The correct answer (exactly as it appears in the options array)
   - The specific unit/topic it covers
   - The skill or concept being tested
 

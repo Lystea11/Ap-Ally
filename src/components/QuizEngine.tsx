@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 
 interface QuizEngineProps {
   quiz: GenerateQuizOutput;
-  onSubmit: (answers: string) => void;
+  onSubmit: (answers: string, rawAnswers: Record<number, string>, quizData: GenerateQuizOutput) => void;
 }
 
 export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
@@ -28,7 +28,7 @@ export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
                 </CardDescription>
             </CardHeader>
             <CardFooter>
-                <Button onClick={() => onSubmit("No quiz taken.")} size="lg">
+                <Button onClick={() => onSubmit("No quiz taken.", {}, quiz)} size="lg">
                     Generate Roadmap Anyway
                 </Button>
             </CardFooter>
@@ -54,7 +54,7 @@ export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
         return `Question: ${question?.question}\nUnit: ${question?.unit}\nSkill: ${question?.skill}\nAnswer: ${answer}`;
       })
       .join("\n\n");
-    onSubmit(formattedAnswers);
+    onSubmit(formattedAnswers, answers, quiz);
   };
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
@@ -65,6 +65,13 @@ export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
   }
 
   const progressValue = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
+  
+  // Clean the question text by removing "Unit X:" prefixes
+  const cleanQuestion = currentQuestion.question.replace(/^Unit\s+\d+:\s*/i, '').trim();
+  
+  // Extract unit number if it exists in the unit field
+  const unitMatch = currentQuestion.unit.match(/Unit\s+(\d+)/i);
+  const unitNumber = unitMatch ? unitMatch[1] : null;
 
   return (
     <div className="space-y-6">
@@ -78,14 +85,23 @@ export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
       
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant="secondary">{currentQuestion.unit}</Badge>
-            <Badge variant="outline">{currentQuestion.skill}</Badge>
+          <div className="flex items-center gap-2 mb-3">
+            {unitNumber && (
+              <Badge className="bg-blue-500 hover:bg-blue-600 text-white">
+                Unit {unitNumber}
+              </Badge>
+            )}
+            <Badge variant="secondary" className="bg-purple-100 text-purple-800 border-purple-200">
+              {currentQuestion.unit.replace(/Unit\s+\d+:?\s*/i, '').trim()}
+            </Badge>
+            <Badge variant="outline" className="border-green-200 text-green-700">
+              {currentQuestion.skill}
+            </Badge>
           </div>
           <CardTitle className="font-headline text-xl">
             Question {currentQuestionIndex + 1}
           </CardTitle>
-          <CardDescription className="text-lg pt-2">{currentQuestion.question}</CardDescription>
+          <CardDescription className="text-lg pt-2">{cleanQuestion}</CardDescription>
         </CardHeader>
         <CardContent>
           <RadioGroup

@@ -65,6 +65,35 @@ CREATE TABLE goals (
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
+-- Onboarding quiz results table to store initial assessment data
+CREATE TABLE onboarding_quiz_results (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_uid TEXT NOT NULL REFERENCES users(uid) ON DELETE CASCADE,
+  ap_class_id UUID NOT NULL REFERENCES ap_classes(id) ON DELETE CASCADE,
+  question TEXT NOT NULL,
+  unit_title TEXT NOT NULL,
+  skill TEXT NOT NULL,
+  user_answer TEXT NOT NULL,
+  correct_answer TEXT NOT NULL,
+  is_correct BOOLEAN NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+-- Practice quiz results table to store practice test performance
+CREATE TABLE practice_quiz_results (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_uid TEXT NOT NULL REFERENCES users(uid) ON DELETE CASCADE,
+  ap_class_id UUID NOT NULL REFERENCES ap_classes(id) ON DELETE CASCADE,
+  quiz_title TEXT NOT NULL,
+  quiz_format TEXT NOT NULL,
+  overall_score DECIMAL(5,2) NOT NULL,
+  questions_answered INTEGER NOT NULL,
+  total_questions INTEGER NOT NULL,
+  time_spent INTEGER,
+  units TEXT[] NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
 -- Create indexes for frequently queried columns
 CREATE INDEX idx_roadmaps_user_uid ON roadmaps(user_uid);
 CREATE INDEX idx_lessons_roadmap_id ON lessons(roadmap_id);
@@ -72,3 +101,7 @@ CREATE INDEX idx_lessons_user_uid ON lessons(user_uid);
 CREATE INDEX idx_course_mastery_user_uid ON course_mastery(user_uid);
 CREATE INDEX idx_goals_user_uid ON goals(user_uid);
 CREATE INDEX idx_ap_classes_user_uid ON ap_classes(user_uid);
+CREATE INDEX idx_onboarding_quiz_results_user_uid ON onboarding_quiz_results(user_uid);
+CREATE INDEX idx_onboarding_quiz_results_ap_class_id ON onboarding_quiz_results(ap_class_id);
+CREATE INDEX idx_practice_quiz_results_user_uid ON practice_quiz_results(user_uid);
+CREATE INDEX idx_practice_quiz_results_ap_class_id ON practice_quiz_results(ap_class_id);

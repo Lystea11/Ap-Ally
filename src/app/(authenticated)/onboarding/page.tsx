@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +12,7 @@ import { generateQuiz, GenerateQuizOutput } from "@/ai/flows/generate-quiz";
 import { generateRoadmap } from "@/ai/flows/generate-roadmap";
 import { useStudy } from "@/hooks/useStudy";
 import { useToast } from "@/hooks/use-toast";
+import { AuthContext } from "@/context/AuthContext";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -118,6 +119,13 @@ export default function OnboardingPage() {
   const router = useRouter();
   const { setRoadmap } = useStudy();
   const { toast } = useToast();
+  const authContext = useContext(AuthContext);
+  
+  if (!authContext) {
+    throw new Error("OnboardingPage must be used within AuthProvider");
+  }
+  
+  const { user } = authContext;
   
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -160,7 +168,7 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleQuizSubmit = async (answers: string) => {
+  const handleQuizSubmit = async (answers: string, rawAnswers: Record<number, string>, quizData: GenerateQuizOutput) => {
     if (!onboardingData) return;
     
     setLoading(true);
@@ -169,6 +177,26 @@ export default function OnboardingPage() {
     
     try {
       const newClass = await createClassAPI(onboardingData.apCourse, onboardingData.testDate?.toISOString());
+      
+      // Save quiz results to database
+      try {
+        await fetch('/api/onboarding-quiz', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userUid: user?.uid || '',
+            apClassId: newClass.id,
+            quizData: quizData,
+            answers: rawAnswers
+          })
+        });
+      } catch (quizError) {
+        console.error("Failed to save quiz results:", quizError);
+        // Don't fail the whole process if quiz saving fails
+      }
+      
       const result = await generateRoadmap({ apCourse: onboardingData.apCourse, quizResults: answers });
       
       setGeneratedRoadmap(result.roadmap);
@@ -205,128 +233,160 @@ export default function OnboardingPage() {
 
   const progressValue = (step / 3) * 100;
 
-  return (
-    <div className="container mx-auto max-w-2xl py-12">
-      <Card className="shadow-2xl">
-        <CardHeader>
-          <Progress value={progressValue} className="mb-4 h-2" />
-          <CardTitle className="font-headline text-3xl">Let's get you set up</CardTitle>
-          <CardDescription>
-            {step === 1 && "Select your AP course and test date to begin your personalized study journey."}
-            {step === 2 && "Take a comprehensive diagnostic quiz to assess your knowledge across different units and skills."}
-            {step === 3 && !loading && "Here's your personalized study plan based on your diagnostic results."}
-            {step === 3 && loading && "Please wait while we create your personalized study plan based on your diagnostic results."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {step === 1 && (
-            <FormProvider {...form}>
-              <form onSubmit={form.handleSubmit(handleStep1Submit)} className="space-y-8">
-                <FormField
-                  control={form.control}
-                  name="apCourse"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-lg">Which AP course are you taking?</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a course" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {apCourseSections.map((section) => (
-                          <div key={section.label}>
-                            <div
-                              className="px-3 py-2 text-xs font-bold text-muted-foreground uppercase tracking-wider select-none pointer-events-none bg-secondary/70 rounded-t-2xl"
-                              style={{
-                                letterSpacing: "0.08em",
-                                marginTop: section.label === "AP Capstone" ? 0 : "0.75rem"
-                              }}
-                            >
-                              {section.label}
-                            </div>
-                            {section.courses.map((course) => (
-                              <SelectItem key={course} value={course}>
-                                {course}
-                              </SelectItem>
-                            ))}
-                          </div>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="testDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel className="text-lg">AP Test Date (Optional)</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
+return (
+  <>
+    {loading && (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
+        <LoadingSpinner className="h-16 w-16" />
+        <p className="mt-4 text-lg text-muted-foreground text-center max-w-md px-4">
+          {loadingMessage}
+        </p>
+      </div>
+    )}
+
+    {!loading && (
+      <div className="container mx-auto max-w-2xl py-12">
+        <Card className="shadow-2xl">
+          <CardHeader>
+            <Progress value={progressValue} className="mb-4 h-2" />
+            <CardTitle className="font-headline text-3xl">
+              Let's get you set up
+            </CardTitle>
+            <CardDescription>
+              {step === 1 &&
+                "Select your AP course and test date to begin your personalized study journey."}
+              {step === 2 &&
+                "Take a comprehensive diagnostic quiz to assess your knowledge across different units and skills."}
+              {step === 3 &&
+                "Here's your personalized study plan based on your diagnostic results."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {step === 1 && (
+              <FormProvider {...form}>
+                <form
+                  onSubmit={form.handleSubmit(handleStep1Submit)}
+                  className="space-y-8"
+                >
+                  <FormField
+                    control={form.control}
+                    name="apCourse"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-lg">
+                          Which AP course are you taking?
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-[240px] pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a course" />
+                            </SelectTrigger>
                           </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date < new Date() || date > new Date("2100-01-01")
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" disabled={loading} size="lg">
-                  {loading ? <LoadingSpinner /> : "Next: Take Diagnostic Quiz"}
-                </Button>
-              </form>
-            </FormProvider>
-          )}
+                          <SelectContent>
+                            {apCourseSections.map((section) => (
+                              <div key={section.label}>
+                                <div
+                                  className="px-3 py-2 text-xs font-bold text-muted-foreground uppercase tracking-wider select-none pointer-events-none bg-secondary/70 rounded-t-2xl"
+                                  style={{
+                                    letterSpacing: "0.08em",
+                                    marginTop:
+                                      section.label === "AP Capstone"
+                                        ? 0
+                                        : "0.75rem",
+                                  }}
+                                >
+                                  {section.label}
+                                </div>
+                                {section.courses.map((course) => (
+                                  <SelectItem key={course} value={course}>
+                                    {course}
+                                  </SelectItem>
+                                ))}
+                              </div>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-          {step === 2 && quizData && (
-            <QuizEngine quiz={quizData} onSubmit={handleQuizSubmit} />
-          )}
+                  <FormField
+                    control={form.control}
+                    name="testDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel className="text-lg">
+                          AP Test Date (Optional)
+                        </FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-[240px] pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, "PPP")
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) =>
+                                date < new Date() ||
+                                date > new Date("2100-01-01")
+                              }
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-          {step === 3 && !loading && generatedRoadmap && (
-            <RoadmapRecap 
-              roadmap={generatedRoadmap}
-              quizResults={quizAnswers}
-              onStartJourney={handleStartJourney}
-            />
-          )}
+                  <Button type="submit" disabled={loading} size="lg">
+                    {loading ? <LoadingSpinner /> : "Next: Take Diagnostic Quiz"}
+                  </Button>
+                </form>
+              </FormProvider>
+            )}
 
-          {loading && (
-            <div className="flex flex-col items-center justify-center gap-4 py-8">
-              <LoadingSpinner className="h-16 w-16" />
-              <p className="text-lg text-muted-foreground">{loadingMessage}</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+            {step === 2 && quizData && (
+              <QuizEngine quiz={quizData} onSubmit={handleQuizSubmit} />
+            )}
+
+            {step === 3 && !loading && generatedRoadmap && (
+              <RoadmapRecap
+                roadmap={generatedRoadmap}
+                quizResults={quizAnswers}
+                onStartJourney={handleStartJourney}
+              />
+            )}
+
+            {loading && (
+              <div className="flex flex-col items-center justify-center gap-4 py-8">
+                <LoadingSpinner className="h-16 w-16" />
+                <p className="text-lg text-muted-foreground">{loadingMessage}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    )}
+  </>
+);

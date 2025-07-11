@@ -31,7 +31,7 @@ export function RoadmapViewer({ roadmap }: RoadmapViewerProps) {
               <AccordionTrigger className="text-lg font-semibold hover:no-underline">
                 <div className="flex items-center gap-4">
                     <span className="text-primary font-bold">Unit {index + 1}</span>
-                    <span>{unit.title}</span>
+                    <span>{unit.title.replace(/^Unit\s+\d+:?\s*/i, '').trim()}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent>

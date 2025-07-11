@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { withAIResilience } from '@/lib/ai-resilience';
 
 const GenerateRoadmapInputSchema = z.object({
   apCourse: z.string().describe('The AP course the student is studying for.'),
@@ -38,7 +39,14 @@ const GenerateRoadmapOutputSchema = z.object({
 export type GenerateRoadmapOutput = z.infer<typeof GenerateRoadmapOutputSchema>;
 
 export async function generateRoadmap(input: GenerateRoadmapInput): Promise<GenerateRoadmapOutput> {
-  return generateRoadmapFlow(input);
+  return withAIResilience(
+    () => generateRoadmapFlow(input),
+    {
+      priority: 'high',
+      timeout: 200000, // 3.33 minutes for roadmap generation
+      fallbackModel: 'googleai/gemini-1.5-flash'
+    }
+  );
 }
 
 const prompt = ai.definePrompt({

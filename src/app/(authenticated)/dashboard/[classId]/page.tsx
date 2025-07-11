@@ -199,23 +199,26 @@ export default function ClassDashboardPage() {
             </Card>
           </div>
         ) : (
-          <div className="grid gap-8 lg:grid-cols-3 lg:items-start">
-            <div className="lg:col-span-1 space-y-6">
-              {/* Remove sticky positioning to keep the progress tracker static */}
-              <div data-guide="progress-tracker">
-                <ProgressTracker />
+          <div className="space-y-8">
+            {/* Main Content Grid */}
+            <div className="grid gap-8 lg:grid-cols-3 lg:items-start">
+              <div className="lg:col-span-1 space-y-6">
+                <div data-guide="progress-tracker">
+                  <ProgressTracker />
+                </div>
+                
+                <div data-guide="practice-quiz">
+                  <PracticeQuizGenerator roadmap={roadmap} apCourse={roadmap.title} classId={classId} />
+                </div>
               </div>
-              
-              <div data-guide="strengths-weaknesses">
-                <StrengthsWeaknesses roadmap={roadmap} />
-              </div>
-              
-              <div data-guide="practice-quiz">
-                <PracticeQuizGenerator roadmap={roadmap} apCourse={roadmap.title} />
+              <div className="lg:col-span-2" data-guide="roadmap-units">
+                <RoadmapViewer roadmap={roadmap} />
               </div>
             </div>
-            <div className="lg:col-span-2" data-guide="roadmap-units">
-              <RoadmapViewer roadmap={roadmap} />
+            
+            {/* Progress Analysis - Bottom Card */}
+            <div data-guide="strengths-weaknesses">
+              <StrengthsWeaknesses roadmap={roadmap} classId={classId} />
             </div>
           </div>
         )}

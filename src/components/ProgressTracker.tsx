@@ -1,3 +1,5 @@
+// src/components/ProgressTracker.tsx
+
 "use client";
 
 import { useStudy } from "@/hooks/useStudy";
@@ -12,7 +14,7 @@ export function ProgressTracker() {
   const completedLessons = roadmap?.units.flatMap(unit => unit.lessons).filter(l => l.completed).length || 0;
 
   return (
-    <Card className="sticky top-24 shadow-lg">
+    <Card className="shadow-lg">
       <CardHeader>
         <div className="flex items-center gap-4">
           <Target className="h-8 w-8 text-primary" />

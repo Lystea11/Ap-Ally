@@ -12,6 +12,9 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { PracticeQuiz } from "./PracticeQuiz";
 import { JsonTable } from './JsonTable';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useState } from 'react';
+
 
 const MermaidDiagram = dynamic(() => import('./MermaidDiagram').then(mod => mod.MermaidDiagram), {
   ssr: false, // This is the crucial part
@@ -32,6 +35,8 @@ export function LessonViewer({ lesson, content, onToggleComplete, nextLesson, on
   const hasPracticeQuestions = content.practiceQuestions && content.practiceQuestions.length > 0;
   // A lesson can be completed if it has no questions, or if the quiz has been passed.
   const canComplete = !hasPracticeQuestions || (quizResult ? quizResult.correct >= 4 : false);
+  const [isQuizOpen, setIsQuizOpen] = useState(false);
+
 
   return (
     <div className="space-y-8">
@@ -52,7 +57,7 @@ export function LessonViewer({ lesson, content, onToggleComplete, nextLesson, on
               })}
             </div>
           </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-wrap gap-4">
           <Button onClick={onToggleComplete} size="lg" disabled={!lesson.completed && !canComplete}>
             {lesson.completed ? (
               <>
@@ -67,17 +72,32 @@ export function LessonViewer({ lesson, content, onToggleComplete, nextLesson, on
               </>
             )}
           </Button>
+
+          {hasPracticeQuestions && (
+            <Dialog open={isQuizOpen} onOpenChange={setIsQuizOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="lg">Take Practice Quiz</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Practice Quiz</DialogTitle>
+                </DialogHeader>
+                <PracticeQuiz
+                  lessonId={lesson.id}
+                  questions={content.practiceQuestions}
+                  onQuizComplete={(score) => {
+                    onQuizComplete(score);
+                    setIsQuizOpen(false);
+                  }}
+                  onRetry={onRetryQuiz}
+                />
+              </DialogContent>
+            </Dialog>
+          )}
         </CardFooter>
       </Card>
 
-      {content.practiceQuestions && content.practiceQuestions.length > 0 && (
-        <PracticeQuiz
-          lessonId={lesson.id}
-          questions={content.practiceQuestions}
-          onQuizComplete={onQuizComplete}
-          onRetry={onRetryQuiz}
-        />
-      )}
+
     </div>
   );
 }
