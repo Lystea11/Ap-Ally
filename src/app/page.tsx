@@ -110,7 +110,9 @@ export default function Home() {
             </Badge>
           </div>
           
-          <LandingPageClient />
+          <div className="flex justify-center">
+            <LandingPageClient />
+          </div>
           
           {/* Stats Section */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 max-w-4xl mx-auto">
@@ -208,8 +210,10 @@ export default function Home() {
                 Start your journey to academic success today.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <LandingPageClient />
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  <div className="flex justify-center">
+                    <LandingPageClient />
+                  </div>
                 <div className="flex items-center gap-2 text-sm text-foreground/60">
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
                   <span>Free 7-day trial • No credit card required</span>

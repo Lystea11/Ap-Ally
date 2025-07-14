@@ -43,25 +43,32 @@ const formatOptions = [
   },
   { 
     value: "laq", 
-    label: "Long Answer (LAQ)", 
-    description: "Detailed response questions",
+    label: "Short Answer (SAQ)", 
+    description: "Short Answer Questions",
     icon: PenTool 
-  },
-  { 
-    value: "mixed", 
-    label: "Mixed Format", 
-    description: "Combination of question types",
-    icon: Target 
   }
 ] as const;
 
-const questionCounts = [5, 10, 15, 20, 25, 30];
+const getQuestionCounts = (format: QuizFormat) => {
+  switch (format) {
+    case "mcq":
+      return [5, 10, 20];
+    case "leq":
+      return [1];
+    case "laq":
+      return [1, 3];
+    case "mixed":
+      return [5, 10, 20];
+    default:
+      return [5, 10, 20];
+  }
+};
 const difficulties = ["easy", "medium", "hard", "mixed"] as const;
 
 export function PracticeQuizGenerator({ roadmap, apCourse, classId }: PracticeQuizGeneratorProps) {
   const [selectedFormat, setSelectedFormat] = useState<QuizFormat>("mcq");
   const [selectedUnits, setSelectedUnits] = useState<string[]>([]);
-  const [questionCount, setQuestionCount] = useState(10);
+  const [questionCount, setQuestionCount] = useState(5);
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard" | "mixed">("medium");
   const [isGenerating, setIsGenerating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -83,6 +90,14 @@ export function PracticeQuizGenerator({ roadmap, apCourse, classId }: PracticeQu
 
     loadQuizResults();
   }, [classId]);
+
+  // Update question count when format changes
+  useEffect(() => {
+    const validCounts = getQuestionCounts(selectedFormat);
+    if (!validCounts.includes(questionCount)) {
+      setQuestionCount(validCounts[0]);
+    }
+  }, [selectedFormat, questionCount]);
 
   const handleUnitToggle = (unitTitle: string) => {
     const cleanTitle = unitTitle.replace(/^Unit\s+\d+:?\s*/i, '').trim();
@@ -147,19 +162,20 @@ export function PracticeQuizGenerator({ roadmap, apCourse, classId }: PracticeQu
 
   const startQuiz = () => {
     if (generatedQuiz) {
-      // Store quiz data and AP course info, then redirect to quiz page
+      // Store quiz data and AP course info, then redirect to appropriate quiz page
       sessionStorage.setItem('practice-quiz', JSON.stringify(generatedQuiz));
       sessionStorage.setItem('ap-course', apCourse);
       sessionStorage.setItem('class-id', classId);
-      window.open('/practice-quiz', '_blank');
+      
+      // Route to appropriate quiz page based on format
+      if (generatedQuiz.format === 'leq' || generatedQuiz.format === 'laq') {
+        window.open('/practice-quiz-free-response', '_blank');
+      } else {
+        window.open('/practice-quiz', '_blank');
+      }
     }
   };
 
-  const resetQuiz = () => {
-    setGeneratedQuiz(null);
-    setShowQuizReady(false);
-    setIsGenerating(false);
-  };
 
   return (
     <Card className="bg-card/60 backdrop-blur border-border/40">
@@ -267,9 +283,9 @@ export function PracticeQuizGenerator({ roadmap, apCourse, classId }: PracticeQu
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {questionCounts.map((count) => (
+                      {getQuestionCounts(selectedFormat).map((count) => (
                         <SelectItem key={count} value={count.toString()}>
-                          {count} questions
+                          {count} {count === 1 ? 'question' : 'questions'}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -454,22 +470,14 @@ export function PracticeQuizGenerator({ roadmap, apCourse, classId }: PracticeQu
                 </div>
                 
                   {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-3 pt-2 w-full">
+                  <div className="flex justify-center pt-2 w-full">
                     <Button 
                       onClick={startQuiz}
-                      className="w-full sm:w-auto flex-1 bg-green-600 hover:bg-green-700"
+                      className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
                       size="lg"
                     >
                       <Play className="mr-2 h-4 w-4" />
                       Start Practice Quiz
-                    </Button>
-                    <Button 
-                      onClick={resetQuiz}
-                      variant="outline"
-                      className="w-full sm:w-auto"
-                      size="lg"
-                    >
-                      Generate New Quiz
                     </Button>
                   </div>
               </div>

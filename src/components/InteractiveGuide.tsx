@@ -185,7 +185,7 @@ export function InteractiveGuide({
       
       {/* Spotlight effect for targeted elements */}
       {step.target && (
-        <div className="fixed inset-0 pointer-events-none z-51">
+        <div className="fixed inset-0 pointer-events-none z-[51]">
           <div 
             className="absolute bg-white/10 rounded-lg border-2 border-primary/50 shadow-lg"
             style={{
@@ -208,7 +208,7 @@ export function InteractiveGuide({
       {/* Guide Tooltip */}
       <Card 
         className={cn(
-          "fixed z-52 w-80 shadow-2xl border-2 border-primary/20 transition-all duration-300",
+          "fixed z-[52] w-80 shadow-2xl border-2 border-primary/20 transition-all duration-300",
           isAnimating && "opacity-0 scale-95"
         )}
         style={tooltipStyle}

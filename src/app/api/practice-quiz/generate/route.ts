@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, AuthenticatedContext } from '@/lib/auth-handler';
 import { z } from 'zod';
 import { ai } from '@/ai/genkit';
+import { withAIResilience } from '@/lib/ai-resilience';
 
 const PracticeQuizRequestSchema = z.object({
   apCourse: z.string().describe('The AP course name'),
@@ -70,50 +71,78 @@ const LAQQuestionSchema = z.object({
   stimulus: z.string().optional().describe('Optional stimulus material'),
 });
 
+// Updated schemas for flexible question validation
+const MCQQuestionOutputSchema = z.object({
+  type: z.literal('mcq'),
+  question: z.string().describe('The question text'),
+  options: z.array(z.string()).describe('MCQ options'),
+  correctAnswer: z.string().describe('MCQ correct answer'),
+  explanation: z.string().describe('MCQ explanation'),
+  unit: z.string().describe('The unit this question covers'),
+  difficulty: z.string().describe('Question difficulty level'),
+  skillCategory: z.string().describe('AP skill category being tested'),
+  stimulus: z.string().optional().describe('Optional stimulus material'),
+});
+
+const LEQQuestionOutputSchema = z.object({
+  type: z.literal('leq'),
+  prompt: z.string().describe('The essay prompt'),
+  timeLimit: z.number().optional().describe('Time limit in minutes'),
+  points: z.number().optional().describe('Points possible'),
+  rubric: z.object({
+    thesis: z.object({
+      points: z.number(),
+      criteria: z.string(),
+    }),
+    evidence: z.object({
+      points: z.number(),
+      criteria: z.string(),
+    }),
+    analysis: z.object({
+      points: z.number(),
+      criteria: z.string(),
+    }),
+    complexity: z.object({
+      points: z.number(),
+      criteria: z.string(),
+    }),
+  }).describe('LEQ rubric'),
+  unit: z.string().describe('The unit this question covers'),
+  difficulty: z.string().describe('Question difficulty level'),
+  skillCategory: z.string().describe('AP skill category being tested'),
+  stimulus: z.string().optional().describe('Optional stimulus material'),
+});
+
+const LAQQuestionOutputSchema = z.object({
+  type: z.literal('laq'),
+  prompt: z.string().describe('The main question prompt'),
+  timeLimit: z.number().optional().describe('Time limit in minutes'),
+  points: z.number().optional().describe('Points possible'),
+  parts: z.array(z.object({
+    letter: z.string(),
+    question: z.string(),
+    points: z.number(),
+    sampleResponse: z.string(),
+  })).describe('LAQ parts'),
+  unit: z.string().describe('The unit this question covers'),
+  difficulty: z.string().describe('Question difficulty level'),
+  skillCategory: z.string().describe('AP skill category being tested'),
+  stimulus: z.string().optional().describe('Optional stimulus material'),
+});
+
+const QuestionOutputSchema = z.discriminatedUnion('type', [
+  MCQQuestionOutputSchema,
+  LEQQuestionOutputSchema,
+  LAQQuestionOutputSchema,
+]);
+
 const PracticeQuizOutputSchema = z.object({
   title: z.string().describe('Title of the practice quiz'),
   format: z.string().describe('Quiz format'),
   totalQuestions: z.number().describe('Total number of questions'),
   estimatedTime: z.number().describe('Estimated completion time in minutes'),
   instructions: z.string().describe('Instructions for taking the quiz'),
-  questions: z.array(z.object({
-    type: z.string().describe('Question type (mcq, leq, or laq)'),
-    question: z.string().optional().describe('The question text for MCQ'),
-    prompt: z.string().optional().describe('The prompt for LEQ/LAQ'),
-    options: z.array(z.string()).optional().describe('MCQ options'),
-    correctAnswer: z.string().optional().describe('MCQ correct answer'),
-    explanation: z.string().optional().describe('MCQ explanation'),
-    timeLimit: z.number().optional().describe('Time limit in minutes'),
-    points: z.number().optional().describe('Points possible'),
-    rubric: z.object({
-      thesis: z.object({
-        points: z.number(),
-        criteria: z.string(),
-      }).optional(),
-      evidence: z.object({
-        points: z.number(),
-        criteria: z.string(),
-      }).optional(),
-      analysis: z.object({
-        points: z.number(),
-        criteria: z.string(),
-      }).optional(),
-      complexity: z.object({
-        points: z.number(),
-        criteria: z.string(),
-      }).optional(),
-    }).optional().describe('LEQ rubric'),
-    parts: z.array(z.object({
-      letter: z.string(),
-      question: z.string(),
-      points: z.number(),
-      sampleResponse: z.string(),
-    })).optional().describe('LAQ parts'),
-    unit: z.string().describe('The unit this question covers'),
-    difficulty: z.string().describe('Question difficulty level'),
-    skillCategory: z.string().describe('AP skill category being tested'),
-    stimulus: z.string().optional().describe('Optional stimulus material'),
-  })).describe('Array of quiz questions'),
+  questions: z.array(QuestionOutputSchema).describe('Array of quiz questions'),
 });
 
 type PracticeQuizOutput = z.infer<typeof PracticeQuizOutputSchema>;
@@ -197,31 +226,46 @@ You MUST include ALL of these fields in your response:
 - instructions: Clear instructions for taking the quiz
 - questions: Array of question objects with all required fields
 
-For MCQ questions, you MUST include these exact fields:
+CRITICAL: Generate questions appropriate for the selected format only.
+
+For MCQ questions, include these exact fields:
 - type: "mcq"
 - question: The question text
-- options: Array of exactly 4 answer choices (e.g., ["A. Option 1", "B. Option 2", "C. Option 3", "D. Option 4"])
+- options: Array of exactly 4 answer choices
 - correctAnswer: The correct answer (must match one of the options exactly)
-- explanation: Detailed explanation of why the answer is correct
-- unit: The unit this question covers
-- difficulty: Question difficulty level
-- skillCategory: AP skill category being tested
-- stimulus: Optional stimulus material (can be empty string if not needed)
+- explanation: Detailed explanation
+- unit, difficulty, skillCategory, stimulus
 
-Example MCQ format:
-{
-  "type": "mcq",
-  "question": "What is the limit of f(x) = x² as x approaches 2?",
-  "options": ["A. 2", "B. 4", "C. 6", "D. 8"],
-  "correctAnswer": "B. 4",
-  "explanation": "The limit of x² as x approaches 2 is 2² = 4.",
-  "unit": "Limits and Continuity",
-  "difficulty": "medium",
-  "skillCategory": "Application",
-  "stimulus": ""
+For LEQ questions, include these exact fields:
+- type: "leq"
+- prompt: The essay prompt
+- timeLimit: Time limit in minutes (typically 45)
+- points: Total points (typically 6)
+- rubric: Object with thesis, evidence, analysis, complexity (each with points and criteria)
+- unit, difficulty, skillCategory, stimulus
+
+For LAQ questions, include these exact fields:
+- type: "laq"
+- prompt: The main question prompt
+- timeLimit: Time limit in minutes (typically 15)
+- points: Total points (typically 3)
+- parts: Array of parts with letter, question, points, sampleResponse
+- unit, difficulty, skillCategory, stimulus
+
+Example LEQ rubric:
+"rubric": {
+  "thesis": { "points": 1, "criteria": "Present a defensible thesis." },
+  "evidence": { "points": 2, "criteria": "Provide specific evidence." },
+  "analysis": { "points": 2, "criteria": "Use evidence to support argument." },
+  "complexity": { "points": 1, "criteria": "Demonstrate sophisticated understanding." }
 }
 
-Ensure your JSON output is complete and valid according to the schema.`,
+Example LAQ parts:
+"parts": [
+  { "letter": "a", "question": "Identify ONE cause...", "points": 1, "sampleResponse": "Economic factors..." },
+  { "letter": "b", "question": "Explain ONE effect...", "points": 1, "sampleResponse": "Political changes..." },
+  { "letter": "c", "question": "Describe ONE similarity...", "points": 1, "sampleResponse": "Both periods show..." }
+]`,
     });
 
     const flow = ai.defineFlow({
@@ -247,23 +291,55 @@ Ensure your JSON output is complete and valid according to the schema.`,
         }
       }
       
-      // Process questions to ensure they have all required fields
+      // Process questions based on their type
       const processedQuestions = (parsedOutput.questions || []).map((question: any, index: number) => {
         const baseQuestion = {
-          type: question.type || 'mcq',
+          type: question.type || input.format || 'mcq',
           unit: question.unit || 'General',
-          difficulty: question.difficulty || 'medium',
+          difficulty: question.difficulty || input.difficulty || 'medium',
           skillCategory: question.skillCategory || 'Knowledge/Understanding',
           stimulus: question.stimulus || '',
         };
 
-        if (question.type === 'mcq' || !question.type) {
+        if (question.type === 'mcq' || (!question.type && input.format === 'mcq')) {
           return {
             ...baseQuestion,
+            type: 'mcq',
             question: question.question || `Question ${index + 1}`,
             options: question.options || ['A. Option 1', 'B. Option 2', 'C. Option 3', 'D. Option 4'],
             correctAnswer: question.correctAnswer || 'A. Option 1',
             explanation: question.explanation || 'Explanation not provided.',
+          };
+        }
+        
+        if (question.type === 'leq' || (!question.type && input.format === 'leq')) {
+          return {
+            ...baseQuestion,
+            type: 'leq',
+            prompt: question.prompt || `Essay Question ${index + 1}`,
+            timeLimit: question.timeLimit || 45,
+            points: question.points || 6,
+            rubric: question.rubric || {
+              thesis: { points: 1, criteria: 'Present a defensible thesis that responds to the prompt.' },
+              evidence: { points: 2, criteria: 'Provide specific evidence to support the thesis.' },
+              analysis: { points: 2, criteria: 'Use evidence to support, qualify, or modify the argument.' },
+              complexity: { points: 1, criteria: 'Demonstrate sophisticated understanding.' }
+            },
+          };
+        }
+        
+        if (question.type === 'laq' || (!question.type && input.format === 'laq')) {
+          return {
+            ...baseQuestion,
+            type: 'laq',
+            prompt: question.prompt || `Short Answer Question ${index + 1}`,
+            timeLimit: question.timeLimit || 15,
+            points: question.points || 3,
+            parts: question.parts || [
+              { letter: 'a', question: 'Part A question', points: 1, sampleResponse: 'Sample response for part A' },
+              { letter: 'b', question: 'Part B question', points: 1, sampleResponse: 'Sample response for part B' },
+              { letter: 'c', question: 'Part C question', points: 1, sampleResponse: 'Sample response for part C' }
+            ],
           };
         }
 
@@ -275,7 +351,11 @@ Ensure your JSON output is complete and valid according to the schema.`,
         title: parsedOutput.title || `AP ${input.apCourse} Practice Quiz`,
         format: parsedOutput.format || input.format,
         totalQuestions: parsedOutput.totalQuestions || processedQuestions.length || input.questionCount,
-        estimatedTime: parsedOutput.estimatedTime || (input.questionCount * 2), // 2 minutes per question as default
+        estimatedTime: parsedOutput.estimatedTime || (
+          input.format === 'leq' ? input.questionCount * 45 :
+          input.format === 'laq' ? input.questionCount * 15 :
+          input.questionCount * 2
+        ),
         instructions: parsedOutput.instructions || 'Complete the following questions to the best of your ability.',
         questions: processedQuestions,
       };
@@ -291,7 +371,14 @@ Ensure your JSON output is complete and valid according to the schema.`,
       return result;
     });
 
-    const result = await flow(parseResult.data);
+    const result = await withAIResilience(
+      () => flow(parseResult.data),
+      {
+        priority: 'high',
+        timeout: 300000, // 5 minutes for quiz generation
+        fallbackModel: 'googleai/gemini-1.5-flash'
+      }
+    );
     
     return NextResponse.json(result);
   } catch (error) {

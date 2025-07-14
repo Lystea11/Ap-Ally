@@ -120,6 +120,7 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
 
   const handleQuizComplete = (result: { correct: number, total: number }) => {
     setQuizResult(result);
+    // Note: Lesson completion and mastery are now handled in PracticeQuiz component
   };
 
   const handleRetryQuiz = () => {
@@ -129,13 +130,21 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
     }
   };
 
+  const handleNavigateNext = () => {
+    if (nextLesson) {
+      router.push(`/lesson/${nextLesson.id}`);
+    } else {
+      router.push('/dashboard');
+    }
+  };
+
   const handleMarkAsComplete = async () => {
     if (!lesson || !lessonContent) return;
 
+    // Only allow manual completion if lesson isn't already completed and quiz requirements are met
     if (lesson.completed) {
-      await updateLessonProgress(lesson.id, false);
-      await setLessonMastery(lesson.id, false);
-      setQuizResult(null);
+      // If lesson is already completed, just navigate
+      handleNavigateNext();
       return;
     }
 
@@ -150,12 +159,7 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
     }
 
     await updateLessonProgress(lesson.id, true);
-    
-    if (nextLesson) {
-      router.push(`/lesson/${nextLesson.id}`);
-    } else {
-      router.push('/dashboard');
-    }
+    handleNavigateNext();
   };
 
   const isLoadingState = studyLoading || contentLoading || (!lesson && !error);
@@ -414,6 +418,7 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
               lesson={lesson}
               content={lessonContent}
               onToggleComplete={handleMarkAsComplete}
+              onNavigateNext={handleNavigateNext}
               nextLesson={nextLesson}
               onQuizComplete={handleQuizComplete}
               onRetryQuiz={handleRetryQuiz}

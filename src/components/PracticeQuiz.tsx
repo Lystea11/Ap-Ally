@@ -26,7 +26,7 @@ interface PracticeQuizProps {
 }
 
 export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: PracticeQuizProps) {
-  const { setLessonMastery } = useStudy();
+  const { setLessonMastery, updateLessonProgress } = useStudy();
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
 
@@ -39,11 +39,23 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
     const correctCount = questions.filter((q, i) => answers[i] === q.correctAnswerIndex).length;
     const totalCount = questions.length;
     const isMastered = correctCount === totalCount;
+    const isPassed = correctCount >= 4;
     
     setSubmitted(true);
     onQuizComplete({ correct: correctCount, total: totalCount });
 
-    await setLessonMastery(lessonId, isMastered, correctCount);
+    try {
+      // Update both mastery and lesson completion if passed
+      const promises = [setLessonMastery(lessonId, isMastered, correctCount)];
+      
+      if (isPassed) {
+        promises.push(updateLessonProgress(lessonId, true));
+      }
+      
+      await Promise.all(promises);
+    } catch (error) {
+      console.error('Failed to update lesson progress:', error);
+    }
   };
 
   const handleRetry = () => {

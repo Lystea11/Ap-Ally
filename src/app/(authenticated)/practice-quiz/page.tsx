@@ -7,8 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { Clock, FileText, CheckSquare, PenTool, Target, ArrowRight, ArrowLeft, Brain, TrendingUp, BookOpen, Lightbulb, RotateCcw } from "lucide-react";
-import { generateQuizFeedbackAPI, saveQuizResultAPI } from "@/lib/api-client";
+import { generateQuizFeedbackAPI, saveQuizResultAPI, updateQuizResultAPI } from "@/lib/api-client";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
@@ -86,7 +87,13 @@ export default function PracticeQuizPage() {
   useEffect(() => {
     const storedQuiz = sessionStorage.getItem('practice-quiz');
     if (storedQuiz) {
-      setQuizData(JSON.parse(storedQuiz));
+      const quiz = JSON.parse(storedQuiz);
+      // Only allow MCQ and mixed formats, redirect pure free response to other page
+      if (quiz.format === 'leq' || quiz.format === 'laq') {
+        window.location.href = '/practice-quiz-free-response';
+      } else {
+        setQuizData(quiz);
+      }
     }
   }, []);
 
@@ -109,6 +116,36 @@ export default function PracticeQuizPage() {
 
   const handleAnswerSelect = (answer: string) => {
     setAnswers(prev => ({ ...prev, [currentQuestion]: answer }));
+  };
+
+  const isQuestionAnswered = (questionIndex: number, question: QuizQuestion) => {
+    if (question.type === 'mcq') {
+      return !!answers[questionIndex];
+    }
+    if (question.type === 'leq') {
+      return !!(answers[questionIndex] && answers[questionIndex].trim());
+    }
+    if (question.type === 'laq' && question.parts) {
+      return question.parts.every(part => 
+        answers[`${questionIndex}-${part.letter}`] && 
+        answers[`${questionIndex}-${part.letter}`].trim()
+      );
+    }
+    return false;
+  };
+
+  const getAllAnsweredCount = () => {
+    if (!quizData) return 0;
+    return quizData.questions.filter((question, index) => 
+      isQuestionAnswered(index, question)
+    ).length;
+  };
+
+  const isAllQuestionsAnswered = () => {
+    if (!quizData) return false;
+    return quizData.questions.every((question, index) => 
+      isQuestionAnswered(index, question)
+    );
   };
 
   const nextQuestion = () => {
@@ -135,22 +172,29 @@ export default function PracticeQuizPage() {
         
         if (classId) {
           const timeSpent = Math.round((Date.now() - quizStartTime) / 60000); // Convert to minutes
-          const questionsAnswered = Object.keys(answers).length;
+          const questionsAnswered = getAllAnsweredCount();
           const totalQuestions = quizData.questions.length;
           
-          // Calculate a basic score (this will be enhanced when we have AI feedback)
+          // Calculate score based on MCQ questions only
           let correctAnswers = 0;
+          let mcqQuestions = 0;
           quizData.questions.forEach((question, index) => {
-            if (question.type === 'mcq' && answers[index] === question.correctAnswer) {
-              correctAnswers++;
+            if (question.type === 'mcq') {
+              mcqQuestions++;
+              if (answers[index] === question.correctAnswer) {
+                correctAnswers++;
+              }
             }
           });
           
-          const overallScore = Math.round((correctAnswers / totalQuestions) * 100);
+          // For MCQ-only or mixed quizzes, calculate score based on MCQ questions
+          const overallScore = mcqQuestions > 0 ? Math.round((correctAnswers / mcqQuestions) * 100) : 0;
           
-          // Get unique units from the answers
+          // Get unique units from answered questions
           const selectedUnits = Array.from(new Set(
-            Object.keys(answers).map(index => quizData.questions[parseInt(index)]?.unit || 'General')
+            quizData.questions
+              .filter((_, index) => isQuestionAnswered(index, quizData.questions[index]))
+              .map(question => question.unit || 'General')
           ));
           
           await saveQuizResultAPI({
@@ -183,6 +227,23 @@ export default function PracticeQuizPage() {
       });
       
       setFeedback(feedbackData);
+      
+      // For mixed quizzes with free response questions, update the database score
+      const hasEssayQuestions = quizData.questions.some(q => q.type === 'leq' || q.type === 'laq');
+      if (hasEssayQuestions && feedbackData.overallScore !== undefined) {
+        try {
+          const classId = sessionStorage.getItem('class-id');
+          if (classId) {
+            await updateQuizResultAPI({
+              classId,
+              quizTitle: quizData.title,
+              newScore: feedbackData.overallScore,
+            });
+          }
+        } catch (updateError) {
+          console.error('Failed to update quiz score in database:', updateError);
+        }
+      }
     } catch (error) {
       console.error('Failed to generate feedback:', error);
     } finally {
@@ -258,6 +319,19 @@ export default function PracticeQuizPage() {
                 <p className="text-muted-foreground">
                   {quizData?.title} - Performance Analysis
                 </p>
+                {(() => {
+                  const hasEssayQuestions = quizData?.questions.some(q => q.type === 'leq' || q.type === 'laq');
+                  if (!hasEssayQuestions) {
+                    return (
+                      <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <p className="text-sm text-blue-800">
+                          📊 Your score has been calculated based on correct MCQ answers. Click "Review Questions & Answers" to see detailed explanations.
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </CardHeader>
           </Card>
@@ -271,12 +345,16 @@ export default function PracticeQuizPage() {
                     {(() => {
                       if (!quizData?.questions) return '0';
                       let correctAnswers = 0;
+                      let mcqQuestions = 0;
                       quizData.questions.forEach((question, index) => {
-                        if (question.type === 'mcq' && answers[index] === question.correctAnswer) {
-                          correctAnswers++;
+                        if (question.type === 'mcq') {
+                          mcqQuestions++;
+                          if (answers[index] === question.correctAnswer) {
+                            correctAnswers++;
+                          }
                         }
                       });
-                      return Math.round((correctAnswers / quizData.questions.length) * 100);
+                      return mcqQuestions > 0 ? Math.round((correctAnswers / mcqQuestions) * 100) : 0;
                     })()}%
                   </div>
                   <div className="text-sm text-muted-foreground">Overall Score</div>
@@ -307,43 +385,86 @@ export default function PracticeQuizPage() {
           </Card>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-            <Button
-              onClick={generateFeedback}
-              disabled={isGeneratingFeedback}
-              className="bg-blue-600 hover:bg-blue-700 h-14 text-sm px-3"
-            >
-              {isGeneratingFeedback ? (
-                <>
-                  <LoadingSpinner className="mr-1 h-4 w-4 flex-shrink-0" />
-                  <span className="truncate">Generating AI Analysis...</span>
-                </>
-              ) : (
-                <>
-                  <Brain className="mr-1 h-4 w-4 flex-shrink-0" />
-                  <span className="truncate">Get AI Performance Analysis</span>
-                </>
-              )}
-            </Button>
+          {(() => {
+            // Only show AI feedback for mixed quizzes with free response questions
+            const hasEssayQuestions = quizData?.questions.some(q => q.type === 'leq' || q.type === 'laq');
             
-            <Button
-              onClick={goToReview}
-              variant="outline"
-              className="h-14 text-sm px-3"
-            >
-              <RotateCcw className="mr-1 h-4 w-4 flex-shrink-0" />
-              <span className="truncate">Review Questions & Answers</span>
-            </Button>
+            if (hasEssayQuestions) {
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+                  <Button
+                    onClick={generateFeedback}
+                    disabled={isGeneratingFeedback}
+                    className="bg-blue-600 hover:bg-blue-700 h-14 text-sm px-3"
+                  >
+                    {isGeneratingFeedback ? (
+                      <>
+                        <LoadingSpinner className="mr-1 h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">Generating AI Analysis...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Brain className="mr-1 h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">Get AI Performance Analysis</span>
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button
+                    onClick={goToReview}
+                    variant="outline"
+                    className="h-14 text-sm px-3"
+                  >
+                    <RotateCcw className="mr-1 h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">Review Questions & Answers</span>
+                  </Button>
 
-            <Button
-              onClick={() => window.close()}
-              variant="secondary"
-              className="h-14 text-sm px-3"
-            >
-              <ArrowLeft className="mr-1 h-4 w-4 flex-shrink-0" />
-              <span className="truncate">Back to Dashboard</span>
-            </Button>
-          </div>
+                  <Button
+                    onClick={() => {
+                      // Refresh the parent window (dashboard) before closing
+                      if (window.opener && !window.opener.closed) {
+                        window.opener.location.reload();
+                      }
+                      window.close();
+                    }}
+                    variant="secondary"
+                    className="h-14 text-sm px-3"
+                  >
+                    <ArrowLeft className="mr-1 h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">Back to Dashboard</span>
+                  </Button>
+                </div>
+              );
+            } else {
+              // For pure MCQ quizzes, no AI feedback needed
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                  <Button
+                    onClick={goToReview}
+                    className="bg-blue-600 hover:bg-blue-700 h-14 text-sm px-3"
+                  >
+                    <RotateCcw className="mr-1 h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">Review Questions & Answers</span>
+                  </Button>
+
+                  <Button
+                    onClick={() => {
+                      // Refresh the parent window (dashboard) before closing
+                      if (window.opener && !window.opener.closed) {
+                        window.opener.location.reload();
+                      }
+                      window.close();
+                    }}
+                    variant="secondary"
+                    className="h-14 text-sm px-3"
+                  >
+                    <ArrowLeft className="mr-1 h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">Back to Dashboard</span>
+                  </Button>
+                </div>
+              );
+            }
+          })()}
 
           {/* AI Feedback Results */}
           {feedback && (
@@ -516,11 +637,19 @@ export default function PracticeQuizPage() {
               {getQuestionIcon(question.type)}
               <div>
                 <CardTitle className="text-lg">
-                  Question {currentQuestion + 1}
+                  Question {currentQuestion + 1} of {quizData.questions.length}
                   {question.type === "leq" && " - Long Essay Question"}
                   {question.type === "laq" && " - Long Answer Question"}
                   {question.type === "mcq" && " - Multiple Choice"}
                 </CardTitle>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                  <span>Progress: {getAllAnsweredCount()}/{quizData.questions.length} questions answered</span>
+                  {isQuestionAnswered(currentQuestion, question) && (
+                    <Badge variant="default" className="bg-green-600 text-white text-xs">
+                      ✓ Answered
+                    </Badge>
+                  )}
+                </div>
                 <div className="flex items-center gap-2 mt-1">
                   <Badge variant="outline">{question.unit}</Badge>
                   <Badge variant="outline">{question.difficulty}</Badge>
@@ -577,6 +706,61 @@ export default function PracticeQuizPage() {
                     </div>
                   ))}
                 </RadioGroup>
+              </div>
+            )}
+
+            {/* LEQ Essay Response */}
+            {question.type === "leq" && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor={`essay-${currentQuestion}`} className="text-sm font-medium">
+                    Your Essay Response
+                  </Label>
+                  <Textarea
+                    id={`essay-${currentQuestion}`}
+                    placeholder="Write your essay response here... Be sure to include a clear thesis, supporting evidence, and analysis."
+                    value={answers[currentQuestion] || ""}
+                    onChange={(e) => setAnswers(prev => ({ ...prev, [currentQuestion]: e.target.value }))}
+                    disabled={showAnswers}
+                    className="min-h-[300px] resize-none"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Time Limit: {question.timeLimit || 45} minutes</span>
+                    <span>{(answers[currentQuestion] || "").length} characters</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* LAQ Short Answer Response */}
+            {question.type === "laq" && question.parts && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">
+                    Your Short Answer Responses
+                  </Label>
+                  {question.parts.map((part, partIndex) => (
+                    <div key={partIndex} className="space-y-2">
+                      <Label htmlFor={`laq-${currentQuestion}-${part.letter}`} className="text-sm font-medium text-green-700">
+                        Part {part.letter.toUpperCase()}: {part.question}
+                      </Label>
+                      <Textarea
+                        id={`laq-${currentQuestion}-${part.letter}`}
+                        placeholder={`Answer for part ${part.letter}... Be specific and concise.`}
+                        value={answers[`${currentQuestion}-${part.letter}`] || ""}
+                        onChange={(e) => setAnswers(prev => ({ ...prev, [`${currentQuestion}-${part.letter}`]: e.target.value }))}
+                        disabled={showAnswers}
+                        className="min-h-[100px] resize-none"
+                      />
+                      <div className="text-xs text-muted-foreground">
+                        {part.points} point{part.points !== 1 ? 's' : ''} • {(answers[`${currentQuestion}-${part.letter}`] || "").length} characters
+                      </div>
+                    </div>
+                  ))}
+                  <div className="text-xs text-muted-foreground mt-2">
+                    Time Limit: {question.timeLimit || 15} minutes total
+                  </div>
+                </div>
               </div>
             )}
 
@@ -708,8 +892,14 @@ export default function PracticeQuizPage() {
                     <ArrowRight className="h-4 w-4 flex-shrink-0" />
                   </Button>
                 ) : (
-                  <Button onClick={finishQuiz} className="bg-green-600 hover:bg-green-700 px-3 py-2 text-sm">
-                    <span className="truncate">Finish Quiz</span>
+                  <Button 
+                    onClick={finishQuiz} 
+                    disabled={!isAllQuestionsAnswered()}
+                    className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed px-3 py-2 text-sm"
+                  >
+                    <span className="truncate">
+                      {isAllQuestionsAnswered() ? 'Finish Quiz' : `Answer All Questions (${getAllAnsweredCount()}/${quizData.questions.length})`}
+                    </span>
                   </Button>
                 )}
               </>

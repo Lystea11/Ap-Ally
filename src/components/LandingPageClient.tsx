@@ -2,13 +2,14 @@
 
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { ArrowRight, GraduationCap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "./LoadingSpinner";
+import { hasExistingClassesAPI } from "@/lib/api-client";
 
 export function LandingPageClient() {
   const { login, loading, isAuthenticated } = useAuth();
@@ -16,12 +17,30 @@ export function LandingPageClient() {
   const { toast } = useToast();
   const hasTriedLogin = useRef(false);
   const redirectedAfterLogin = useRef(false);
+  const [checkingClasses, setCheckingClasses] = useState(false);
 
   useEffect(() => {
     // Redirect immediately if user just logged in via popup
     if (isAuthenticated && hasTriedLogin.current && !redirectedAfterLogin.current) {
       redirectedAfterLogin.current = true;
-      router.push("/onboarding");
+      setCheckingClasses(true);
+      
+      // Check if user has existing classes to determine redirect destination
+      hasExistingClassesAPI()
+        .then((hasClasses) => {
+          if (hasClasses) {
+            router.push("/dashboard");
+          } else {
+            router.push("/onboarding");
+          }
+        })
+        .catch((error) => {
+          console.error("Error checking classes, defaulting to onboarding:", error);
+          router.push("/onboarding");
+        })
+        .finally(() => {
+          setCheckingClasses(false);
+        });
     }
   }, [isAuthenticated, router]);
 
@@ -41,7 +60,7 @@ export function LandingPageClient() {
     router.push("/dashboard");
   };
 
-  if (loading) {
+  if (loading || checkingClasses) {
     return (
       <div className="flex h-11 items-center justify-center">
         <LoadingSpinner />

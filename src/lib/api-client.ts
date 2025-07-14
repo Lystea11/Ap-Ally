@@ -178,3 +178,25 @@ export const saveQuizResultAPI = (quizResult: {
 export const getQuizResultsAPI = (classId: string): Promise<{ results: any[] }> => {
     return fetchWithAuth(`/api/practice-quiz/results?classId=${classId}`);
 };
+
+export const updateQuizResultAPI = (updateData: {
+    classId: string;
+    quizTitle: string;
+    newScore: number;
+}): Promise<any> => {
+    return fetchWithAuth('/api/practice-quiz/results/update', {
+        method: 'PATCH',
+        body: JSON.stringify(updateData),
+    });
+};
+
+// Helper function to check if user has existing classes
+export const hasExistingClassesAPI = async (): Promise<boolean> => {
+    try {
+        const classes = await getClassesAPI();
+        return classes.length > 0;
+    } catch (error) {
+        console.error('Error checking for existing classes:', error);
+        return false;
+    }
+};
