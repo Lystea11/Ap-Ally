@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Clock, FileText, PenTool, Target, ArrowRight, ArrowLeft, Brain, TrendingUp, BookOpen, Lightbulb, RotateCcw } from "lucide-react";
 import { generateQuizFeedbackAPI, saveQuizResultAPI } from "@/lib/api-client";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { useAdTrigger } from "@/context/AdContext";
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 
@@ -78,6 +79,7 @@ export default function FreeResponseQuizPage() {
   const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('quiz');
   const [quizStartTime, setQuizStartTime] = useState<number>(Date.now());
+  const { triggerQuizCompletionAd } = useAdTrigger();
 
   useEffect(() => {
     const storedQuiz = sessionStorage.getItem('practice-quiz');
@@ -188,6 +190,15 @@ export default function FreeResponseQuizPage() {
             totalQuestions,
             timeSpent,
             units: selectedUnits,
+          });
+          
+          // Trigger ad after successful quiz completion
+          triggerQuizCompletionAd({
+            quizTitle: quizData.title,
+            quizFormat: quizData.format,
+            overallScore: feedbackData.overallScore,
+            questionsAnswered,
+            totalQuestions,
           });
         } catch (error) {
           console.error('Failed to save quiz results:', error);

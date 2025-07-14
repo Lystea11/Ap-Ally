@@ -7,12 +7,54 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Circle, BookOpen, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAdTrigger } from "@/context/AdContext";
+import { useEffect } from "react";
 
 interface RoadmapViewerProps {
   roadmap: Roadmap;
 }
 
 export function RoadmapViewer({ roadmap }: RoadmapViewerProps) {
+  const { triggerUnitCompletionAd, triggerRoadmapCheckpointAd } = useAdTrigger();
+
+  useEffect(() => {
+    // Check for newly completed units and trigger ads
+    const completedUnits = roadmap.units.filter(unit => 
+      unit.lessons.length > 0 && unit.lessons.every(lesson => lesson.completed)
+    );
+    
+    // Check overall progress milestones
+    const totalLessons = roadmap.units.reduce((sum, unit) => sum + unit.lessons.length, 0);
+    const completedLessons = roadmap.units.reduce((sum, unit) => 
+      sum + unit.lessons.filter(lesson => lesson.completed).length, 0
+    );
+    const progressPercentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+    
+    // Trigger milestone checkpoints
+    if (progressPercentage >= 25 && progressPercentage < 50) {
+      triggerRoadmapCheckpointAd({
+        milestone: "25% Complete",
+        completedLessons,
+        totalLessons,
+        progressPercentage,
+      });
+    } else if (progressPercentage >= 50 && progressPercentage < 75) {
+      triggerRoadmapCheckpointAd({
+        milestone: "50% Complete",
+        completedLessons,
+        totalLessons,
+        progressPercentage,
+      });
+    } else if (progressPercentage >= 75 && progressPercentage < 100) {
+      triggerRoadmapCheckpointAd({
+        milestone: "75% Complete",
+        completedLessons,
+        totalLessons,
+        progressPercentage,
+      });
+    }
+  }, [roadmap, triggerUnitCompletionAd, triggerRoadmapCheckpointAd]);
+
   return (
     <Card className="shadow-lg">
       <CardHeader>

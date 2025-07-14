@@ -19,11 +19,13 @@ import { Separator } from "@/components/ui/separator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Lesson } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
+import { useAdTrigger } from "@/context/AdContext";
 
 export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
   const { roadmap, loading: studyLoading, updateLessonProgress, setLessonMastery } = useStudy();
   const router = useRouter();
   const { toast } = useToast();
+  const { triggerLessonCompletionAd } = useAdTrigger();
   
   const [lessonContent, setLessonContent] = useState<GenerateLessonContentOutput | null>(null);
   const [contentLoading, setContentLoading] = useState(true);
@@ -159,6 +161,15 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
     }
 
     await updateLessonProgress(lesson.id, true);
+    
+    // Trigger ad after successful lesson completion
+    triggerLessonCompletionAd({
+      lessonId: lesson.id,
+      lessonTitle: lesson.title,
+      unitTitle: currentUnit?.title,
+      quizResult: quizResult,
+    });
+    
     handleNavigateNext();
   };
 

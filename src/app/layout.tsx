@@ -28,6 +28,8 @@ export default function RootLayout({
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css"
       />
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6379242266018309"
+           crossOrigin="anonymous"></script>
       </head>
       <body className="font-body antialiased" suppressHydrationWarning>
         <AppProviders>

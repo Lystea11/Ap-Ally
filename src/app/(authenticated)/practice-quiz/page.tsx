@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Clock, FileText, CheckSquare, PenTool, Target, ArrowRight, ArrowLeft, Brain, TrendingUp, BookOpen, Lightbulb, RotateCcw } from "lucide-react";
 import { generateQuizFeedbackAPI, saveQuizResultAPI, updateQuizResultAPI } from "@/lib/api-client";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { useAdTrigger } from "@/context/AdContext";
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 
@@ -83,6 +84,7 @@ export default function PracticeQuizPage() {
   const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('quiz');
   const [quizStartTime, setQuizStartTime] = useState<number>(Date.now());
+  const { triggerQuizCompletionAd } = useAdTrigger();
 
   useEffect(() => {
     const storedQuiz = sessionStorage.getItem('practice-quiz');
@@ -206,6 +208,15 @@ export default function PracticeQuizPage() {
             totalQuestions,
             timeSpent,
             units: selectedUnits,
+          });
+          
+          // Trigger ad after successful quiz completion
+          triggerQuizCompletionAd({
+            quizTitle: quizData.title,
+            quizFormat: quizData.format,
+            overallScore,
+            questionsAnswered,
+            totalQuestions,
           });
         }
       } catch (error) {

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useToast } from "@/hooks/use-toast";
+import { useAdTrigger } from "@/context/AdContext";
 import { FileText, BookOpen, PenTool, Target, Play, CheckSquare, Clock } from "lucide-react";
 import type { Roadmap } from "@/lib/types";
 import { generatePracticeQuizAPI, getQuizResultsAPI } from "@/lib/api-client";
@@ -76,6 +77,7 @@ export function PracticeQuizGenerator({ roadmap, apCourse, classId }: PracticeQu
   const [showQuizReady, setShowQuizReady] = useState(false);
   const [quizResults, setQuizResults] = useState<any[]>([]);
   const { toast } = useToast();
+  const { triggerPracticeQuizGeneratedAd } = useAdTrigger();
 
   // Load quiz results on component mount
   useEffect(() => {
@@ -143,6 +145,15 @@ export function PracticeQuizGenerator({ roadmap, apCourse, classId }: PracticeQu
       
       setGeneratedQuiz(quizData);
       setShowQuizReady(true);
+      
+      // Trigger ad after successful quiz generation
+      triggerPracticeQuizGeneratedAd({
+        quizTitle: quizData.title,
+        quizFormat: selectedFormat,
+        questionCount,
+        difficulty,
+        selectedUnits,
+      });
       
       toast({
         title: "Quiz Generated!",
