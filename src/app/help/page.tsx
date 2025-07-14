@@ -121,7 +121,7 @@ export default function HelpCenterPage() {
           <Card className="bg-card/60 backdrop-blur-xl border border-white/20 text-center">
             <CardContent className="p-6">
               <MessageSquare className="h-8 w-8 text-primary mx-auto mb-2" />
-              <div className="text-2xl font-bold text-foreground">< 24hrs</div>
+              <div className="text-2xl font-bold text-foreground">24hrs</div>
               <div className="text-sm text-foreground/60">Average Response Time</div>
             </CardContent>
           </Card>
