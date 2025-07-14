@@ -5,6 +5,7 @@ import { LandingPageClient } from "@/components/LandingPageClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DynamicBackground } from "@/components/DynamicBackground";
+import { Footer } from "@/components/Footer";
 
 const features = [
   {
@@ -216,13 +217,15 @@ export default function Home() {
                   </div>
                 <div className="flex items-center gap-2 text-sm text-foreground/60">
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  <span>Free 7-day trial • No credit card required</span>
+                  <span>Free Forever • Monetized Through Ads</span>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
       </section>
+      
+      <Footer />
     </main>
   );
 }
