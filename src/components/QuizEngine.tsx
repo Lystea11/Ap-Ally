@@ -8,6 +8,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 
 interface QuizEngineProps {
   quiz: GenerateQuizOutput;
@@ -101,7 +105,14 @@ export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
           <CardTitle className="font-headline text-xl">
             Question {currentQuestionIndex + 1}
           </CardTitle>
-          <CardDescription className="text-lg pt-2">{cleanQuestion}</CardDescription>
+          <CardDescription className="text-lg pt-2">
+            <ReactMarkdown
+              remarkPlugins={[remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+            >
+              {cleanQuestion}
+            </ReactMarkdown>
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <RadioGroup
@@ -113,7 +124,13 @@ export function QuizEngine({ quiz, onSubmit }: QuizEngineProps) {
               <div key={i} className="flex items-center space-x-3">
                 <RadioGroupItem value={option} id={`q${currentQuestionIndex}-o${i}`} />
                 <Label htmlFor={`q${currentQuestionIndex}-o${i}`} className="text-base font-normal">
-                  {option}
+                  <ReactMarkdown
+                    remarkPlugins={[remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
+                    className="inline"
+                  >
+                    {option}
+                  </ReactMarkdown>
                 </Label>
               </div>
             ))}

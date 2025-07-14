@@ -10,6 +10,7 @@ import * as z from "zod";
 
 import { generateQuiz, GenerateQuizOutput } from "@/ai/flows/generate-quiz";
 import { generateRoadmap } from "@/ai/flows/generate-roadmap";
+import { generateCustomRoadmap } from "@/ai/flows/generate-custom-roadmap";
 import { useStudy } from "@/hooks/useStudy";
 import { useToast } from "@/hooks/use-toast";
 import { AuthContext } from "@/context/AuthContext";
@@ -20,6 +21,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { QuizEngine } from "@/components/QuizEngine";
 import { RoadmapRecap } from "@/components/RoadmapRecap";
@@ -111,6 +113,7 @@ const apCourseSections = [
 const formSchema = z.object({
   apCourse: z.string().min(1, "Please select a course."),
   testDate: z.date().optional(),
+  customDescription: z.string().optional(),
 });
 
 type OnboardingFormValues = z.infer<typeof formSchema>;
@@ -135,11 +138,13 @@ export default function OnboardingPage() {
   const [quizAnswers, setQuizAnswers] = useState<string>("");
   const [generatedRoadmap, setGeneratedRoadmap] = useState<any>(null);
   const [newClassId, setNewClassId] = useState<string>("");
+  const [isCustomFlow, setIsCustomFlow] = useState(false);
   
   const form = useForm<OnboardingFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       apCourse: "",
+      customDescription: "",
     },
   });
 
@@ -161,6 +166,43 @@ export default function OnboardingPage() {
       toast({
         title: "Error",
         description: "Could not generate your quiz. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCustomSubmit = async (data: OnboardingFormValues) => {
+    if (!data.customDescription?.trim()) {
+      toast({
+        title: "Error",
+        description: "Please describe what you want to study.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    setLoadingMessage("Generating your personalized study roadmap based on your description...");
+    setOnboardingData(data);
+    
+    try {
+      const newClass = await createClassAPI(data.apCourse, data.testDate?.toISOString());
+      
+      const result = await generateCustomRoadmap({ 
+        apCourse: data.apCourse, 
+        customDescription: data.customDescription 
+      });
+      
+      setGeneratedRoadmap(result.roadmap);
+      setNewClassId(newClass.id);
+      setStep(3);
+    } catch (error) {
+      console.error("Failed to generate custom roadmap:", error);
+      toast({
+        title: "Error",
+        description: "Could not create your custom roadmap. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -253,127 +295,283 @@ return (
               Let's get you set up
             </CardTitle>
             <CardDescription>
-              {step === 1 &&
+              {step === 1 && !isCustomFlow &&
                 "Select your AP course and test date to begin your personalized study journey."}
+              {step === 1 && isCustomFlow &&
+                "Describe what you want to study and we'll create a custom roadmap just for you."}
               {step === 2 &&
                 "Take a comprehensive diagnostic quiz to assess your knowledge across different units and skills."}
-              {step === 3 &&
+              {step === 3 && !isCustomFlow &&
                 "Here's your personalized study plan based on your diagnostic results."}
+              {step === 3 && isCustomFlow &&
+                "Here's your personalized study plan based on your custom description."}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {step === 1 && (
               <FormProvider {...form}>
-                <form
-                  onSubmit={form.handleSubmit(handleStep1Submit)}
-                  className="space-y-8"
-                >
-                  <FormField
-                    control={form.control}
-                    name="apCourse"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-lg">
-                          Which AP course are you taking?
-                        </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a course" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {apCourseSections.map((section) => (
-                              <div key={section.label}>
-                                <div
-                                  className="px-3 py-2 text-xs font-bold text-muted-foreground uppercase tracking-wider select-none pointer-events-none bg-secondary/70 rounded-t-2xl"
-                                  style={{
-                                    letterSpacing: "0.08em",
-                                    marginTop:
-                                      section.label === "AP Capstone"
-                                        ? 0
-                                        : "0.75rem",
-                                  }}
-                                >
-                                  {section.label}
-                                </div>
-                                {section.courses.map((course) => (
-                                  <SelectItem key={course} value={course}>
-                                    {course}
-                                  </SelectItem>
-                                ))}
-                              </div>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="testDate"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel className="text-lg">
-                          AP Test Date (Optional)
-                        </FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
+                {!isCustomFlow ? (
+                  <form
+                    onSubmit={form.handleSubmit(handleStep1Submit)}
+                    className="space-y-8"
+                  >
+                    <FormField
+                      control={form.control}
+                      name="apCourse"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-lg">
+                            Which AP course are you taking?
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
                             <FormControl>
-                              <Button
-                                variant={"outline"}
-                                className={cn(
-                                  "w-[240px] pl-3 text-left font-normal",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                              >
-                                {field.value ? (
-                                  format(field.value, "PPP")
-                                ) : (
-                                  <span>Pick a date</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a course" />
+                              </SelectTrigger>
                             </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) =>
-                                date < new Date() ||
-                                date > new Date("2100-01-01")
-                              }
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                            <SelectContent>
+                              {apCourseSections.map((section) => (
+                                <div key={section.label}>
+                                  <div
+                                    className="px-3 py-2 text-xs font-bold text-muted-foreground uppercase tracking-wider select-none pointer-events-none bg-secondary/70 rounded-t-2xl"
+                                    style={{
+                                      letterSpacing: "0.08em",
+                                      marginTop:
+                                        section.label === "AP Capstone"
+                                          ? 0
+                                          : "0.75rem",
+                                    }}
+                                  >
+                                    {section.label}
+                                  </div>
+                                  {section.courses.map((course) => (
+                                    <SelectItem key={course} value={course}>
+                                      {course}
+                                    </SelectItem>
+                                  ))}
+                                </div>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <Button type="submit" disabled={loading} size="lg">
-                    {loading ? <LoadingSpinner /> : "Next: Take Diagnostic Quiz"}
-                  </Button>
-                </form>
+                    <FormField
+                      control={form.control}
+                      name="testDate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-lg">
+                            AP Test Date (Optional)
+                          </FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-[240px] pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP")
+                                  ) : (
+                                    <span>Pick a date</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                  date < new Date() ||
+                                  date > new Date("2100-01-01")
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="flex flex-col gap-4">
+                      <Button type="submit" disabled={loading} size="lg">
+                        {loading ? <LoadingSpinner /> : "Next: Take Diagnostic Quiz"}
+                      </Button>
+                      
+                      <div className="flex items-center gap-4">
+                        <div className="flex-1 border-t"></div>
+                        <span className="text-sm text-muted-foreground">OR</span>
+                        <div className="flex-1 border-t"></div>
+                      </div>
+                      
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="lg"
+                        onClick={() => setIsCustomFlow(true)}
+                        disabled={loading}
+                      >
+                        I already know what I want to study
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <form
+                    onSubmit={form.handleSubmit(handleCustomSubmit)}
+                    className="space-y-8"
+                  >
+                    <FormField
+                      control={form.control}
+                      name="apCourse"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-lg">
+                            Which AP course are you taking?
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a course" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {apCourseSections.map((section) => (
+                                <div key={section.label}>
+                                  <div
+                                    className="px-3 py-2 text-xs font-bold text-muted-foreground uppercase tracking-wider select-none pointer-events-none bg-secondary/70 rounded-t-2xl"
+                                    style={{
+                                      letterSpacing: "0.08em",
+                                      marginTop:
+                                        section.label === "AP Capstone"
+                                          ? 0
+                                          : "0.75rem",
+                                    }}
+                                  >
+                                    {section.label}
+                                  </div>
+                                  {section.courses.map((course) => (
+                                    <SelectItem key={course} value={course}>
+                                      {course}
+                                    </SelectItem>
+                                  ))}
+                                </div>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="testDate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-lg">
+                            AP Test Date (Optional)
+                          </FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-[240px] pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP")
+                                  ) : (
+                                    <span>Pick a date</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                  date < new Date() ||
+                                  date > new Date("2100-01-01")
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="customDescription"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-lg">
+                            What specifically do you want to study?
+                          </FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Describe what you want to focus on in your AP course. For example: 'I want to focus on calculus applications in physics problems' or 'I need help with essay writing techniques for the DBQ section'..."
+                              className="min-h-[120px]"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="flex flex-col gap-4">
+                      <Button type="submit" disabled={loading} size="lg">
+                        {loading ? <LoadingSpinner /> : "Generate Custom Study Plan"}
+                      </Button>
+                      
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => setIsCustomFlow(false)}
+                        disabled={loading}
+                      >
+                        ← Back to diagnostic quiz
+                      </Button>
+                    </div>
+                  </form>
+                )}
               </FormProvider>
             )}
 
-            {step === 2 && quizData && (
+            {step === 2 && quizData && !isCustomFlow && (
               <QuizEngine quiz={quizData} onSubmit={handleQuizSubmit} />
             )}
 
             {step === 3 && !loading && generatedRoadmap && (
               <RoadmapRecap
                 roadmap={generatedRoadmap}
-                quizResults={quizAnswers}
+                quizResults={isCustomFlow ? "" : quizAnswers}
                 onStartJourney={handleStartJourney}
               />
             )}

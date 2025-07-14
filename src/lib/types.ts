@@ -50,3 +50,13 @@ export interface OnboardingQuizResult {
   is_correct: boolean;
   created_at: string;
 }
+
+export interface QuizQuestion {
+  id: number;
+  question: string;
+  options: string[];
+}
+
+export interface ParsedQuiz {
+  questions: QuizQuestion[];
+}

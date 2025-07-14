@@ -73,7 +73,7 @@ type ViewMode = 'quiz' | 'grading' | 'results';
 export default function FreeResponseQuizPage() {
   const [quizData, setQuizData] = useState<QuizData | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState<FeedbackData | null>(null);
   const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('quiz');

@@ -53,6 +53,15 @@ const prompt = ai.definePrompt({
   3. Range from foundational to advanced concepts
   4. Are appropriate for the AP level
   5. Each question should clearly indicate which unit/topic and skill it assesses
+  6. Use LaTeX formatting for all mathematical expressions, equations, and formulas:
+     - Inline math: Use single dollar signs $E=mc^2$ for expressions within text
+     - Block math: Use double dollar signs $$\\frac{d}{dx}[f(x)] = f'(x)$$ for standalone equations
+     - Scientific notation: Use LaTeX format $6.022 \\times 10^{23}$ instead of 6.022e23
+     - Fractions: Use \\frac{numerator}{denominator} format like $\\frac{1}{2}$
+     - Subscripts and superscripts: Use _{subscript} and ^{superscript} like $H_2O$ and $x^2$
+     - Greek letters: Use LaTeX commands like $\\alpha$, $\\beta$, $\\pi$, $\\Delta$
+     - Special symbols: Use LaTeX commands like $\\infty$, $\\sum$, $\\int$, $\\sqrt{x}$
+     - Chemical formulas: Use LaTeX format $CH_4 + 2O_2 \\rightarrow CO_2 + 2H_2O$
 
   For each question, provide:
   - A clear, well-written question

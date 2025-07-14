@@ -414,6 +414,7 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
           
           {/* Main Content */}
           <div className="lg:col-span-3">
+            {lesson && lessonContent && (
             <LessonViewer
               lesson={lesson}
               content={lessonContent}
@@ -424,6 +425,7 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
               onRetryQuiz={handleRetryQuiz}
               quizResult={quizResult}
             />
+            )}
           </div>
         </div>
       </div>

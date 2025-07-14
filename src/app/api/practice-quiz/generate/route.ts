@@ -17,8 +17,8 @@ type PracticeQuizRequest = z.infer<typeof PracticeQuizRequestSchema>;
 const MCQQuestionSchema = z.object({
   type: z.string().describe('Question type: mcq'),
   question: z.string().describe('The question text'),
-  options: z.array(z.string()).describe('Four multiple choice options labeled A, B, C, D'),
-  correctAnswer: z.string().describe('The correct answer (A, B, C, or D)'),
+  options: z.array(z.string()).describe('Four multiple choice options without labels'),
+  correctAnswer: z.string().describe('The correct answer option text'),
   explanation: z.string().describe('Detailed explanation referencing AP concepts and why other options are incorrect'),
   unit: z.string().describe('The unit this question covers'),
   difficulty: z.string().describe('Question difficulty level'),
@@ -175,7 +175,7 @@ CRITICAL AP FORMATTING REQUIREMENTS:
 
 1. **Multiple Choice Questions (MCQ)**:
    - Set type field to "mcq"
-   - Exact AP exam format with 4 options (A, B, C, D)
+   - Exact AP exam format with 4 options (labels will be added by frontend)
    - Test AP skills: Knowledge/Understanding, Application, Analysis/Synthesis
    - Include stimulus materials when appropriate (excerpts, charts, images)
    - Distractors must be plausible but clearly incorrect
@@ -209,7 +209,19 @@ CRITICAL AP FORMATTING REQUIREMENTS:
    - Reference real historical events, concepts, and examples
    - Match authentic AP exam difficulty and complexity
 
-5. **Rubric Details**:
+5. **Mathematical Content Formatting**:
+   - Use LaTeX formatting for ALL mathematical expressions, equations, and formulas
+   - Inline math: Use single dollar signs $E=mc^2$ for expressions within text
+   - Block math: Use double dollar signs $$\\frac{d}{dx}[f(x)] = f'(x)$$ for standalone equations
+   - Scientific notation: Use LaTeX format $6.022 \\times 10^{23}$ instead of 6.022e23
+   - Fractions: Use \\frac{numerator}{denominator} format like $\\frac{1}{2}$
+   - Subscripts and superscripts: Use _{subscript} and ^{superscript} like $H_2O$ and $x^2$
+   - Greek letters: Use LaTeX commands like $\\alpha$, $\\beta$, $\\pi$, $\\Delta$
+   - Special symbols: Use LaTeX commands like $\\infty$, $\\sum$, $\\int$, $\\sqrt{x}$
+   - Chemical formulas: Use LaTeX format $CH_4 + 2O_2 \\rightarrow CO_2 + 2H_2O$
+   - IMPORTANT: Escape backslashes properly in JSON strings (use \\\\frac instead of \\frac)
+
+6. **Rubric Details**:
    - Provide complete rubric breakdown for each question type
    - Include specific point allocations and requirements
    - Reference AP scoring guidelines terminology
@@ -306,8 +318,8 @@ Example LAQ parts:
             ...baseQuestion,
             type: 'mcq',
             question: question.question || `Question ${index + 1}`,
-            options: question.options || ['A. Option 1', 'B. Option 2', 'C. Option 3', 'D. Option 4'],
-            correctAnswer: question.correctAnswer || 'A. Option 1',
+            options: question.options || ['Option 1', 'Option 2', 'Option 3', 'Option 4'],
+            correctAnswer: question.correctAnswer || 'Option 1',
             explanation: question.explanation || 'Explanation not provided.',
           };
         }

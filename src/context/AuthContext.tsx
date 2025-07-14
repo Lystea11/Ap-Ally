@@ -1,13 +1,13 @@
 "use client";
 
 import React, { createContext, useState, useEffect, ReactNode } from "react";
-import { User, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
+import { User, UserCredential, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase-client";
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: () => Promise<void>;
+  login: () => Promise<UserCredential>;
   logout: () => Promise<void>;
   loading: boolean;
   getToken: () => Promise<string | null>;
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  const login = () => {
+  const login = (): Promise<UserCredential> => {
     return signInWithPopup(auth, googleProvider).catch((error) => {
       console.error("Firebase authentication failed with popup:", error);
       throw error;

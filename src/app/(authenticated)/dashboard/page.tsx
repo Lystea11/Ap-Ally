@@ -115,7 +115,7 @@ export default function DashboardPage() {
                     <div className="flex items-center">
                       <EditClassDialog
                         classId={apClass.id}
-                        currentTestDate={apClass.test_date}
+                        currentTestDate={apClass.test_date ?? null}
                         onClassUpdated={fetchClasses}
                       />
                       <AlertDialog>
