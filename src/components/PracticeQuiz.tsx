@@ -75,6 +75,66 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
 
   const resultStats = getResultStats();
   
+  // Function to preprocess mathematical expressions
+  const preprocessMathContent = (content: string) => {
+    if (!content) return content;
+    
+    // Common mathematical patterns that need LaTeX formatting
+    const mathPatterns = [
+      // Superscripts like ^2, ^3
+      { pattern: /\^(\d+)/g, replacement: '^{$1}' },
+      { pattern: /\^(\([^)]+\))/g, replacement: '^{$1}' },
+      // Subscripts like _2, _3
+      { pattern: /_(\d+)/g, replacement: '_{$1}' },
+      { pattern: /_(\([^)]+\))/g, replacement: '_{$1}' },
+      // Fractions like a/b (only if not already in LaTeX)
+      { pattern: /(\w+)\/(\w+)/g, replacement: '\\frac{$1}{$2}' },
+      // Integrals
+      { pattern: /∫/g, replacement: '\\int' },
+      // Greek letters
+      { pattern: /π/g, replacement: '\\pi' },
+      { pattern: /α/g, replacement: '\\alpha' },
+      { pattern: /β/g, replacement: '\\beta' },
+      { pattern: /γ/g, replacement: '\\gamma' },
+      { pattern: /δ/g, replacement: '\\delta' },
+      { pattern: /Δ/g, replacement: '\\Delta' },
+      { pattern: /θ/g, replacement: '\\theta' },
+      { pattern: /λ/g, replacement: '\\lambda' },
+      { pattern: /μ/g, replacement: '\\mu' },
+      { pattern: /σ/g, replacement: '\\sigma' },
+      { pattern: /φ/g, replacement: '\\phi' },
+      { pattern: /ω/g, replacement: '\\omega' },
+      // Special symbols
+      { pattern: /∞/g, replacement: '\\infty' },
+      { pattern: /±/g, replacement: '\\pm' },
+      { pattern: /≤/g, replacement: '\\leq' },
+      { pattern: /≥/g, replacement: '\\geq' },
+      { pattern: /≠/g, replacement: '\\neq' },
+      { pattern: /×/g, replacement: '\\times' },
+      { pattern: /÷/g, replacement: '\\div' },
+      { pattern: /√/g, replacement: '\\sqrt' },
+    ];
+    
+    let processed = content;
+    
+    // Check if content already has LaTeX delimiters
+    const hasLatexDelimiters = /\$[^$]+\$/.test(processed) || /\$\$[^$]+\$\$/.test(processed);
+    
+    if (!hasLatexDelimiters) {
+      // Apply mathematical pattern replacements
+      mathPatterns.forEach(({ pattern, replacement }) => {
+        processed = processed.replace(pattern, replacement);
+      });
+      
+      // Wrap in LaTeX delimiters if we made any changes and it contains math symbols
+      if (processed !== content && /[\\^_{}]/.test(processed)) {
+        processed = `$${processed}$`;
+      }
+    }
+    
+    return processed;
+  };
+
   // Custom renderer to handle paragraphs inside labels and other inline contexts
   const renderers = {
     p: (props: any) => <span {...props} className="inline" />
@@ -138,7 +198,7 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
             <div className="font-semibold flex items-center gap-2 prose prose-lg dark:prose-invert max-w-none">
               <span>{qIndex + 1}.</span>
               <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                {q.question}
+                {preprocessMathContent(q.question)}
               </ReactMarkdown>
             </div>
             <RadioGroup
@@ -163,7 +223,7 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
                     <RadioGroupItem value={oIndex.toString()} id={`q${qIndex}-o${oIndex}`} />
                     <Label htmlFor={`q${qIndex}-o${oIndex}`} className="flex-1 font-normal cursor-pointer">
                       <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={renderers}>
-                        {option}
+                        {preprocessMathContent(option)}
                       </ReactMarkdown>
                     </Label>
                     {submitted && (isSelected || isCorrect) && (
@@ -177,7 +237,7 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
                 <div className="p-4 bg-muted/50 rounded-md mt-2 text-sm">
                     <span className="font-semibold">Explanation: </span>
                     <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={renderers}>
-                        {q.explanation}
+                        {preprocessMathContent(q.explanation)}
                     </ReactMarkdown>
                 </div>
             )}

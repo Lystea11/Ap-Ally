@@ -77,10 +77,11 @@ Topic: {{{topic}}}
 2.  **Practice Questions ('practiceQuestions' field):**
     - Separately, create exactly 5 interactive practice questions to test the student's understanding.
     - For each, provide:
-      - The question text.
-      - An array of exactly 4 multiple choice options.
+      - The question text (use LaTeX formatting for any mathematical expressions).
+      - An array of exactly 4 multiple choice options (use LaTeX formatting for any mathematical expressions, e.g., $x^2$, $\pi$, $\frac{1}{2}$, $\int$, etc.).
       - The 0-based index of the correct answer.
-      - A brief explanation of the correct answer.
+      - A brief explanation of the correct answer (use LaTeX formatting for any mathematical expressions).
+    - **IMPORTANT**: All mathematical expressions in questions, options, and explanations MUST use LaTeX formatting with dollar signs (e.g., $x^2$ for superscripts, $H_2O$ for subscripts, $\pi$ for pi, $\int$ for integrals, $\frac{a}{b}$ for fractions).
 `,
 });
 
