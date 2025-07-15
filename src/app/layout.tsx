@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AppProviders } from "@/app/providers";
 import { Toaster } from "@/components/ui/toaster";
+import { CookieConsent } from "@/components/CookieConsent";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
@@ -35,6 +36,7 @@ export default function RootLayout({
         <AppProviders>
           {children}
           <Toaster />
+          <CookieConsent />
         </AppProviders>
         <Analytics />
         <SpeedInsights />

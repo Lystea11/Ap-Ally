@@ -235,12 +235,43 @@ export default function PrivacyPolicyPage() {
             <CardTitle>Children's Privacy (COPPA)</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-foreground/70">
-              AP Ally is designed for high school students and does not knowingly collect personal information 
-              from children under 13 years of age. If we learn that we have collected personal information from 
-              a child under 13, we will delete that information as quickly as possible. If you believe that a 
-              child under 13 may have provided us with personal information, please contact us immediately.
-            </p>
+            <div className="space-y-4">
+              <p className="text-foreground/70">
+                AP Ally is designed for high school students and does not knowingly collect personal information 
+                from children under 13 years of age. We comply with the Children's Online Privacy Protection Act (COPPA).
+              </p>
+              
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <h4 className="font-semibold text-amber-800 mb-2">Important Notice for Parents</h4>
+                <p className="text-sm text-amber-700">
+                  If you are a parent or guardian and you believe your child under 13 has provided us with 
+                  personal information, please contact us immediately at{" "}
+                  <a href="mailto:privacy@apally.com" className="text-primary hover:underline">
+                    privacy@apally.com
+                  </a>. 
+                  We will delete such information as quickly as possible.
+                </p>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold mb-2">COPPA Compliance Measures</h4>
+                <ul className="list-disc list-inside space-y-1 text-foreground/70">
+                  <li>We do not knowingly collect personal information from children under 13</li>
+                  <li>We do not use interest-based advertising targeting children under 13</li>
+                  <li>We do not share personal information of children under 13 with third parties</li>
+                  <li>We maintain safeguards to protect children's privacy</li>
+                  <li>We respond promptly to requests from parents regarding their children's information</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold mb-2">If You Are Under 13</h4>
+                <p className="text-foreground/70">
+                  If you are under 13 years old, please do not use AP Ally or provide any personal information 
+                  to us. Instead, ask your parent or guardian to help you find age-appropriate educational resources.
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 

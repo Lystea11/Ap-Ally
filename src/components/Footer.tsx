@@ -63,6 +63,9 @@ export function Footer() {
               <Link href="/cookie-policy" className="text-sm text-foreground/70 hover:text-primary transition-colors">
                 Cookie Policy
               </Link>
+              <Link href="/privacy-settings" className="text-sm text-foreground/70 hover:text-primary transition-colors">
+                Privacy Settings
+              </Link>
               <a 
                 href="mailto:legal@ap-ally.com" 
                 className="text-sm text-foreground/70 hover:text-primary transition-colors"
