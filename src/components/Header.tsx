@@ -4,8 +4,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { GraduationCap, LogOut } from "lucide-react";
+import { GraduationCap, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,22 +16,33 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useState } from "react";
 
 export function Header() {
   const { user, logout, isAuthenticated, loading } = useAuth();
   const router = useRouter();
+  const isMobile = useIsMobile();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     router.push("/");
+    setMobileMenuOpen(false);
   };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
-      <div className="container flex h-16 max-w-7xl items-center justify-between px-6">
-        <div className="flex items-center gap-3 pl-4">
+      <div className="container flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+        <div className="flex items-center gap-3 pl-2 sm:pl-4">
           <Link 
             href="/dashboard" 
             className="flex items-center gap-3 transition-all duration-200 hover:opacity-80 group"
@@ -44,63 +56,125 @@ export function Header() {
           </Link>
         </div>
         
-        <div className="flex items-center gap-3 pr-4">
+        <div className="flex items-center gap-3 pr-2 sm:pr-4">
           {loading ? (
             <div className="flex items-center gap-2">
               <Skeleton className="h-8 w-20 rounded-md" />
               <Skeleton className="h-10 w-10 rounded-full" />
             </div>
           ) : isAuthenticated && user ? (
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex flex-col items-end text-right">
-                <p className="text-sm font-medium text-foreground leading-none">
-                  {user.displayName ?? 'Anonymous User'}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {user.email}
-                </p>
+            <>
+              {/* Desktop Navigation */}
+              <div className="hidden sm:flex items-center gap-4">
+                <div className="hidden md:flex flex-col items-end text-right">
+                  <p className="text-sm font-medium text-foreground leading-none">
+                    {user.displayName ?? 'Anonymous User'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {user.email}
+                  </p>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      className="relative h-10 w-10 rounded-full ring-2 ring-transparent hover:ring-primary/20 transition-all duration-200"
+                    >
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage 
+                          src={user.photoURL ?? `https://placehold.co/40x40.png`} 
+                          alt={user.displayName ?? "User avatar"} 
+                          data-ai-hint="user avatar"
+                          className="object-cover" 
+                        />
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                          {user.displayName?.charAt(0) ?? user.email?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-64 p-2" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal p-3">
+                      <div className="flex flex-col space-y-2">
+                        <p className="text-sm font-semibold leading-none text-foreground">
+                          {user.displayName ?? 'Anonymous User'}
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground break-all">
+                          {user.email}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={handleLogout}
+                      className="p-3 cursor-pointer hover:bg-destructive/10 focus:bg-destructive/10"
+                    >
+                      <LogOut className="mr-3 h-4 w-4 text-destructive" />
+                      <span className="text-destructive font-medium">Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    className="relative h-10 w-10 rounded-full ring-2 ring-transparent hover:ring-primary/20 transition-all duration-200"
-                  >
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage 
-                        src={user.photoURL ?? `https://placehold.co/40x40.png`} 
-                        alt={user.displayName ?? "User avatar"} 
-                        data-ai-hint="user avatar"
-                        className="object-cover" 
-                      />
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                        {user.displayName?.charAt(0) ?? user.email?.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-64 p-2" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal p-3">
-                    <div className="flex flex-col space-y-2">
-                      <p className="text-sm font-semibold leading-none text-foreground">
-                        {user.displayName ?? 'Anonymous User'}
-                      </p>
-                      <p className="text-xs leading-none text-muted-foreground break-all">
-                        {user.email}
-                      </p>
+
+              {/* Mobile Navigation */}
+              <div className="flex sm:hidden items-center gap-3">
+                <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-10 w-10">
+                      <Menu className="h-5 w-5" />
+                      <span className="sr-only">Toggle menu</span>
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-80 p-0">
+                    <SheetHeader className="p-6 pb-4 border-b">
+                      <SheetTitle className="text-left">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-12 w-12">
+                            <AvatarImage 
+                              src={user.photoURL ?? `https://placehold.co/40x40.png`} 
+                              alt={user.displayName ?? "User avatar"} 
+                              className="object-cover" 
+                            />
+                            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                              {user.displayName?.charAt(0) ?? user.email?.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col">
+                            <p className="text-sm font-semibold text-foreground leading-none">
+                              {user.displayName ?? 'Anonymous User'}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                      </SheetTitle>
+                    </SheetHeader>
+                    <div className="px-6 py-4 space-y-4">
+                      <Button 
+                        variant="ghost" 
+                        onClick={() => {
+                          router.push("/dashboard");
+                          setMobileMenuOpen(false);
+                        }}
+                        className="w-full justify-start text-left h-auto py-3"
+                      >
+                        <GraduationCap className="mr-3 h-5 w-5" />
+                        <span>Dashboard</span>
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        onClick={handleLogout}
+                        className="w-full justify-start text-left h-auto py-3 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <LogOut className="mr-3 h-5 w-5" />
+                        <span>Log out</span>
+                      </Button>
                     </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    onClick={handleLogout}
-                    className="p-3 cursor-pointer hover:bg-destructive/10 focus:bg-destructive/10"
-                  >
-                    <LogOut className="mr-3 h-4 w-4 text-destructive" />
-                    <span className="text-destructive font-medium">Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
+            </>
           ) : null}
         </div>
       </div>

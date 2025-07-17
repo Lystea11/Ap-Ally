@@ -101,11 +101,12 @@ export function LessonViewer({ lesson, content, onToggleComplete, onNavigateNext
               })}
             </div>
           </CardContent>
-        <CardFooter className="flex flex-wrap gap-4">
+        <CardFooter className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <Button 
             onClick={lesson.completed ? onNavigateNext : onToggleComplete} 
             size="lg" 
             disabled={!lesson.completed && !canComplete}
+            className="w-full sm:w-auto"
           >
             <CheckCircle className="mr-2 h-5 w-5" />
             {nextLesson ? 'Next Lesson' : 'Complete & Finish'}
@@ -115,7 +116,7 @@ export function LessonViewer({ lesson, content, onToggleComplete, onNavigateNext
           {hasPracticeQuestions && (
             <Dialog open={isQuizOpen} onOpenChange={setIsQuizOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="lg">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto">
                   {hasFailedQuiz ? (
                     <>
                       <RefreshCw className="mr-2 h-4 w-4" />
@@ -126,7 +127,7 @@ export function LessonViewer({ lesson, content, onToggleComplete, onNavigateNext
                   )}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-0">
                 <DialogHeader>
                   <DialogTitle>Practice Quiz</DialogTitle>
                 </DialogHeader>

@@ -58,6 +58,36 @@
   }
 }
 
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+  /* Improve touch targets for mobile */
+  button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improve input field touch targets */
+  input, textarea, select {
+    min-height: 44px;
+  }
+  
+  /* Improve clickable area for radio buttons and checkboxes */
+  input[type="radio"], input[type="checkbox"] {
+    min-height: 20px;
+    min-width: 20px;
+  }
+  
+  /* Improve scrollable content */
+  .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevent zoom on input focus */
+  input, textarea, select {
+    font-size: 16px;
+  }
+}
+
 @layer utilities {
   @keyframes-moving-lines {
     0% {

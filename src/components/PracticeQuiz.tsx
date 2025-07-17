@@ -143,23 +143,23 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-start">
-          <div>
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+          <div className="flex-1">
             <div className="flex items-center gap-3">
-              <BrainCircuit className="h-7 w-7 text-primary" />
-              <CardTitle className="font-headline text-2xl">Practice Quiz</CardTitle>
+              <BrainCircuit className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+              <CardTitle className="font-headline text-xl sm:text-2xl">Practice Quiz</CardTitle>
             </div>
-            <CardDescription>Score at least 4/{questions.length} to pass. Get a perfect score to earn a mastery badge.</CardDescription>
+            <CardDescription className="text-sm sm:text-base">Score at least 4/{questions.length} to pass. Get a perfect score to earn a mastery badge.</CardDescription>
           </div>
           {resultStats && !resultStats.isMastered && (
-            <Button onClick={handleRetry} variant="outline">
+            <Button onClick={handleRetry} variant="outline" size="sm" className="w-full sm:w-auto">
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Try Again
             </Button>
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-8">
+      <CardContent className="space-y-6 sm:space-y-8">
         {resultStats && (
             <div className="space-y-4">
                 <Alert 
@@ -174,14 +174,14 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
                     ) : resultStats.isPassed ? (
                       <ThumbsUp className="h-4 w-4 text-primary" />
                     ) : null}
-                     <AlertTitle className="font-bold">
+                     <AlertTitle className="font-bold text-sm sm:text-base">
                         {resultStats.isMastered
                           ? "Mastery Achieved!"
                           : resultStats.isPassed
                           ? "Congratulations, You Passed!"
                           : "Review Needed"}
                     </AlertTitle>
-                    <AlertDescription>
+                    <AlertDescription className="text-sm">
                         You scored {resultStats.correctCount} out of {resultStats.totalCount}. 
                         {resultStats.isMastered
                           ? " Great job! You've earned the mastery badge for this lesson."
@@ -194,9 +194,9 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
         )}
 
         {questions.map((q, qIndex) => (
-          <div key={qIndex} className="space-y-4">
-            <div className="font-semibold flex items-center gap-2 prose prose-lg dark:prose-invert max-w-none">
-              <span>{qIndex + 1}.</span>
+          <div key={qIndex} className="space-y-3 sm:space-y-4">
+            <div className="font-semibold flex items-start gap-2 prose prose-base sm:prose-lg dark:prose-invert max-w-none">
+              <span className="mt-1 text-sm sm:text-base">{qIndex + 1}.</span>
               <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                 {preprocessMathContent(q.question)}
               </ReactMarkdown>
@@ -205,36 +205,44 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
               value={answers[qIndex]?.toString() ?? ''}
               onValueChange={(value) => handleAnswerChange(qIndex, parseInt(value))}
               disabled={submitted}
+              className="gap-2 sm:gap-3"
             >
               {q.options.map((option, oIndex) => {
                  const isCorrect = oIndex === q.correctAnswerIndex;
                  const isSelected = answers[qIndex] === oIndex;
-                 const statusIcon = isCorrect ? <Check className="h-5 w-5 text-green-600" /> : <X className="h-5 w-5 text-destructive" />;
+                 const statusIcon = isCorrect ? <Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" /> : <X className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />;
 
                 return (
                   <div
                     key={oIndex}
                     className={cn(
-                      "flex items-center space-x-3 rounded-md border p-3 transition-colors",
+                      "flex items-start space-x-3 rounded-md border p-3 transition-colors touch-manipulation",
                       submitted && isCorrect && "border-green-500 bg-green-50 dark:bg-green-950",
                       submitted && !isCorrect && isSelected && "border-destructive bg-red-50 dark:bg-red-950"
                     )}
                   >
-                    <RadioGroupItem value={oIndex.toString()} id={`q${qIndex}-o${oIndex}`} />
-                    <Label htmlFor={`q${qIndex}-o${oIndex}`} className="flex-1 font-normal cursor-pointer">
+                    <RadioGroupItem 
+                      value={oIndex.toString()} 
+                      id={`q${qIndex}-o${oIndex}`}
+                      className="mt-1 shrink-0"
+                    />
+                    <Label 
+                      htmlFor={`q${qIndex}-o${oIndex}`} 
+                      className="flex-1 font-normal cursor-pointer text-sm sm:text-base leading-relaxed"
+                    >
                       <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={renderers}>
                         {preprocessMathContent(option)}
                       </ReactMarkdown>
                     </Label>
                     {submitted && (isSelected || isCorrect) && (
-                      <div className="ml-auto">{statusIcon}</div>
+                      <div className="ml-auto mt-1 shrink-0">{statusIcon}</div>
                     )}
                   </div>
                 );
               })}
             </RadioGroup>
             {submitted && (
-                <div className="p-4 bg-muted/50 rounded-md mt-2 text-sm">
+                <div className="p-3 sm:p-4 bg-muted/50 rounded-md mt-2 text-sm">
                     <span className="font-semibold">Explanation: </span>
                     <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={renderers}>
                         {preprocessMathContent(q.explanation)}
@@ -246,12 +254,19 @@ export function PracticeQuiz({ lessonId, questions, onQuizComplete, onRetry }: P
         
         <div className="flex justify-start">
             {!submitted && (
-                <Button onClick={handleSubmit} disabled={Object.keys(answers).length !== questions.length}>
+                <Button 
+                  onClick={handleSubmit} 
+                  disabled={Object.keys(answers).length !== questions.length}
+                  className="w-full sm:w-auto"
+                >
                     Submit Quiz
                 </Button>
             )}
             {submitted && (
-              <Button onClick={() => onQuizComplete({ correct: resultStats?.correctCount ?? 0, total: resultStats?.totalCount ?? 0})}>
+              <Button 
+                onClick={() => onQuizComplete({ correct: resultStats?.correctCount ?? 0, total: resultStats?.totalCount ?? 0})}
+                className="w-full sm:w-auto"
+              >
                 Close
               </Button>
             )}

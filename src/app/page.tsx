@@ -78,51 +78,51 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-16 text-center">
         <div className="container max-w-7xl">
-          <Badge variant="secondary" className="mb-6 bg-primary/10 text-primary border-primary/20">
+          <Badge variant="secondary" className="mb-6 bg-primary/10 text-primary border-primary/20 text-sm">
             🚀 AI-Powered AP Exam Preparation
           </Badge>
           
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl">
-              <GraduationCap className="h-8 w-8 text-primary" />
+          <div className="flex items-center justify-center gap-3 sm:gap-4 mb-6">
+            <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-primary/10 rounded-2xl">
+              <GraduationCap className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
             </div>
-            <h1 className="font-headline text-6xl font-bold tracking-tighter text-primary sm:text-7xl md:text-8xl">
+            <h1 className="font-headline text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tighter text-primary">
               AP Ally
             </h1>
           </div>
           
-          <p className="max-w-4xl mx-auto text-xl text-foreground/80 md:text-2xl mb-8 leading-relaxed">
+          <p className="max-w-4xl mx-auto text-lg sm:text-xl md:text-2xl text-foreground/80 mb-8 leading-relaxed px-2">
             Transform your AP exam preparation with personalized AI tutoring. Get customized study plans, 
             interactive lessons, and real-time progress tracking to achieve your target score.
           </p>
           
-          <div className="flex flex-wrap justify-center gap-4 mb-12">
-            <Badge variant="outline" className="bg-background/80 backdrop-blur">
-              <Clock className="w-4 h-4 mr-2" />
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-12 px-2">
+            <Badge variant="outline" className="bg-background/80 backdrop-blur text-xs sm:text-sm">
+              <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               Save 40+ hours of study time
             </Badge>
-            <Badge variant="outline" className="bg-background/80 backdrop-blur">
-              <Target className="w-4 h-4 mr-2" />
+            <Badge variant="outline" className="bg-background/80 backdrop-blur text-xs sm:text-sm">
+              <Target className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               Increase scores by 1.2 points on average
             </Badge>
-            <Badge variant="outline" className="bg-background/80 backdrop-blur">
-              <Users className="w-4 h-4 mr-2" />
+            <Badge variant="outline" className="bg-background/80 backdrop-blur text-xs sm:text-sm">
+              <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               Trusted by 10,000+ students
             </Badge>
           </div>
           
-          <div className="flex justify-center">
+          <div className="flex justify-center mb-12">
             <LandingPageClient />
           </div>
           
           {/* Stats Section */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-8 sm:mt-16 max-w-4xl mx-auto">
             {stats.map((stat) => (
               <Card key={stat.label} className="bg-card/60 backdrop-blur-xl border border-white/20 text-center">
-                <CardContent className="p-6">
-                  <stat.icon className="h-8 w-8 text-primary mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                  <div className="text-sm text-foreground/60">{stat.label}</div>
+                <CardContent className="p-3 sm:p-6">
+                  <stat.icon className="h-6 w-6 sm:h-8 sm:w-8 text-primary mx-auto mb-2" />
+                  <div className="text-lg sm:text-2xl font-bold text-foreground">{stat.value}</div>
+                  <div className="text-xs sm:text-sm text-foreground/60">{stat.label}</div>
                 </CardContent>
               </Card>
             ))}
@@ -131,30 +131,30 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="relative z-10 py-24 px-4">
+      <section className="relative z-10 py-16 sm:py-24 px-4">
         <div className="container max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="font-headline text-4xl font-bold mb-4">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="font-headline text-3xl sm:text-4xl font-bold mb-4">
               Everything You Need to Succeed
             </h2>
-            <p className="text-xl text-foreground/60 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-foreground/60 max-w-2xl mx-auto px-2">
               Our comprehensive platform combines AI technology with proven study methods to maximize your AP exam performance.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {features.map((feature) => (
               <Card key={feature.title} className="bg-card/60 backdrop-blur-xl border border-white/20 hover:shadow-lg transition-all duration-300 group">
-                <CardHeader>
+                <CardHeader className="pb-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-                      <feature.icon className="h-6 w-6 text-primary" />
+                    <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                      <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                     </div>
-                    <CardTitle className="text-xl">{feature.title}</CardTitle>
+                    <CardTitle className="text-lg sm:text-xl">{feature.title}</CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-foreground/70 leading-relaxed">{feature.description}</p>
+                <CardContent className="pt-0">
+                  <p className="text-sm sm:text-base text-foreground/70 leading-relaxed">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -163,34 +163,41 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="relative z-10 py-24 px-4 bg-primary/5">
+      <section className="relative z-10 py-16 sm:py-24 px-4 bg-primary/5">
         <div className="container max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="font-headline text-4xl font-bold mb-4">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="font-headline text-3xl sm:text-4xl font-bold mb-4">
               How AP Ally Works
             </h2>
-            <p className="text-xl text-foreground/60 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-foreground/60 max-w-2xl mx-auto px-2">
               Our proven 4-step process helps you go from struggling student to AP exam success story.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {steps.map((step, index) => (
               <div key={step.step} className="relative">
                 <Card className="bg-card/60 backdrop-blur-xl border border-white/20 text-center h-full">
-                  <CardContent className="p-8">
-                    <div className="flex items-center justify-center w-16 h-16 bg-primary text-primary-foreground rounded-full text-2xl font-bold mb-6 mx-auto">
+                  <CardContent className="p-6 sm:p-8">
+                    <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-primary text-primary-foreground rounded-full text-xl sm:text-2xl font-bold mb-4 sm:mb-6 mx-auto">
                       {step.step}
                     </div>
-                    <h3 className="text-xl font-semibold mb-4">{step.title}</h3>
-                    <p className="text-foreground/70 leading-relaxed">{step.description}</p>
+                    <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">{step.title}</h3>
+                    <p className="text-sm sm:text-base text-foreground/70 leading-relaxed">{step.description}</p>
                   </CardContent>
                 </Card>
                 
                 {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
-                    <ArrowRight className="h-8 w-8 text-primary/40" />
-                  </div>
+                  <>
+                    {/* Desktop arrow */}
+                    <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
+                      <ArrowRight className="h-8 w-8 text-primary/40" />
+                    </div>
+                    {/* Mobile arrow */}
+                    <div className="block lg:hidden flex justify-center my-4">
+                      <ArrowRight className="h-6 w-6 text-primary/40 rotate-90" />
+                    </div>
+                  </>
                 )}
               </div>
             ))}
@@ -199,23 +206,23 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative z-10 py-24 px-4">
+      <section className="relative z-10 py-16 sm:py-24 px-4">
         <div className="container max-w-4xl mx-auto text-center">
           <Card className="bg-gradient-to-r from-primary/10 to-primary/5 backdrop-blur-xl border border-primary/20">
-            <CardContent className="p-12">
-              <h2 className="font-headline text-4xl font-bold mb-4">
+            <CardContent className="p-8 sm:p-12">
+              <h2 className="font-headline text-3xl sm:text-4xl font-bold mb-4">
                 Ready to Ace Your AP Exams?
               </h2>
-              <p className="text-xl text-foreground/70 mb-8 max-w-2xl mx-auto">
+              <p className="text-lg sm:text-xl text-foreground/70 mb-8 max-w-2xl mx-auto px-2">
                 Join thousands of students who have improved their AP scores with personalized AI tutoring. 
                 Start your journey to academic success today.
               </p>
               
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                  <div className="flex justify-center">
-                    <LandingPageClient />
-                  </div>
-                <div className="flex items-center gap-2 text-sm text-foreground/60">
+              <div className="flex flex-col gap-4 justify-center items-center">
+                <div className="flex justify-center">
+                  <LandingPageClient />
+                </div>
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-foreground/60">
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
                   <span>Free Forever • Monetized Through Ads</span>
                 </div>

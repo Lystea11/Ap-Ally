@@ -83,12 +83,12 @@ export function LandingPageClient() {
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 sm:flex-row">
+    <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
       <Button
         size="lg"
         onClick={handleGetStarted}
         disabled={loading}
-        className="font-bold"
+        className="font-bold w-full sm:w-auto"
       >
         Get Started for Free
         <ArrowRight className="ml-2 h-5 w-5" />
@@ -98,6 +98,7 @@ export function LandingPageClient() {
         variant="outline"
         onClick={handleGetStarted}
         disabled={loading}
+        className="w-full sm:w-auto"
       >
         Sign In
       </Button>

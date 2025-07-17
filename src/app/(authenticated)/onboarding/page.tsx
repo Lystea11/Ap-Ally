@@ -287,14 +287,14 @@ return (
     )}
 
     {!loading && (
-      <div className="container mx-auto max-w-2xl py-12">
+      <div className="container mx-auto max-w-2xl py-6 sm:py-12 px-4">
         <Card className="shadow-2xl">
           <CardHeader>
             <Progress value={progressValue} className="mb-4 h-2" />
-            <CardTitle className="font-headline text-3xl">
+            <CardTitle className="font-headline text-2xl sm:text-3xl">
               Let's get you set up
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm sm:text-base">
               {step === 1 && !isCustomFlow &&
                 "Select your AP course and test date to begin your personalized study journey."}
               {step === 1 && isCustomFlow &&
@@ -407,7 +407,7 @@ return (
                     />
 
                     <div className="flex flex-col gap-4">
-                      <Button type="submit" disabled={loading} size="lg">
+                      <Button type="submit" disabled={loading} size="lg" className="w-full">
                         {loading ? <LoadingSpinner /> : "Next: Take Diagnostic Quiz"}
                       </Button>
                       
@@ -545,7 +545,7 @@ return (
                     />
 
                     <div className="flex flex-col gap-4">
-                      <Button type="submit" disabled={loading} size="lg">
+                      <Button type="submit" disabled={loading} size="lg" className="w-full">
                         {loading ? <LoadingSpinner /> : "Generate Custom Study Plan"}
                       </Button>
                       

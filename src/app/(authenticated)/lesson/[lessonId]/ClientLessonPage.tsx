@@ -11,12 +11,14 @@ import type { GenerateLessonContentOutput } from "@/ai/flows/generate-lesson-con
 import { LessonViewer } from "@/components/LessonViewer";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ChevronRight, Clock, CheckCircle, AlertCircle, BookOpen, Target, Trophy, ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowLeft, ChevronRight, Clock, CheckCircle, AlertCircle, BookOpen, Target, Trophy, ArrowRight, ChevronDown, Menu } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Lesson } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useAdTrigger } from "@/context/AdContext";
@@ -26,11 +28,13 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
   const router = useRouter();
   const { toast } = useToast();
   const { triggerLessonCompletionAd } = useAdTrigger();
+  const isMobile = useIsMobile();
   
   const [lessonContent, setLessonContent] = useState<GenerateLessonContentOutput | null>(null);
   const [contentLoading, setContentLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quizResult, setQuizResult] = useState<{ correct: number, total: number } | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const fetchedLessonIdRef = useRef<string | null>(null);
 
   const { lesson, nextLesson, previousLesson, currentUnit, progressData } = useMemo(() => {
@@ -249,22 +253,136 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Header Navigation */}
       <div className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Button asChild variant="ghost" size="sm">
                 <Link href={roadmap ? `/dashboard/${roadmap.id}` : "/dashboard"}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Roadmap
+                  <span className="hidden sm:inline">Roadmap</span>
+                  <span className="sm:hidden">Back</span>
                 </Link>
               </Button>
+              
+              {/* Mobile Navigation Button */}
+              {isMobile && (
+                <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <Menu className="h-4 w-4" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-80 p-0">
+                    <SheetHeader className="p-6 pb-4 border-b">
+                      <SheetTitle className="text-left flex items-center gap-2">
+                        <BookOpen className="h-5 w-5" />
+                        Lesson Navigation
+                      </SheetTitle>
+                    </SheetHeader>
+                    <div className="p-6 space-y-4">
+                      {/* Previous Lesson */}
+                      {previousLesson && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            Previous
+                          </p>
+                          <Button 
+                            asChild 
+                            variant="ghost" 
+                            size="sm" 
+                            className="w-full justify-start h-auto p-3"
+                            onClick={() => setSidebarOpen(false)}
+                          >
+                            <Link href={`/lesson/${previousLesson.id}`}>
+                              <div className="flex items-center gap-2 w-full">
+                                <ArrowLeft className="h-4 w-4 shrink-0" />
+                                <div className="text-left w-full overflow-hidden">
+                                  <p className="font-medium text-sm truncate block">{previousLesson.title}</p>
+                                  <p className="text-xs text-muted-foreground">Continue from here</p>
+                                </div>
+                              </div>
+                            </Link>
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {/* Current Lesson */}
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                          Current
+                        </p>
+                        <div className="p-3 bg-purple-100/60 rounded-lg border border-purple-200/50">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+                            <div>
+                              <p className="font-medium text-sm">{lesson?.title}</p>
+                              <p className="text-xs text-muted-foreground">In progress</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Next Lesson */}
+                      {nextLesson && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            Next
+                          </p>
+                          <Button 
+                            asChild 
+                            variant="ghost" 
+                            size="sm" 
+                            className="w-full justify-start h-auto p-3"
+                            disabled={!lesson?.completed}
+                            onClick={() => setSidebarOpen(false)}
+                          >
+                            <Link href={`/lesson/${nextLesson.id}`}>
+                              <div className="flex items-center gap-2 w-full">
+                                <div className="text-left w-full overflow-hidden">
+                                  <p className="font-medium text-sm truncate block">{nextLesson.title}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {lesson?.completed ? "Ready to start" : "Complete current lesson first"}
+                                  </p>
+                                </div>
+                                <ArrowRight className="h-4 w-4 shrink-0" />
+                              </div>
+                            </Link>
+                          </Button>
+                        </div>
+                      )}
+                      
+                      <Separator />
+                      
+                      {/* Quiz Status */}
+                      {quizResult && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            Quiz Results
+                          </p>
+                          <div className="p-3 bg-secondary/50 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Trophy className="h-4 w-4 text-yellow-500" />
+                              <span className="font-medium text-sm">
+                                {quizResult.correct}/{quizResult.total} correct
+                              </span>
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {quizResult.correct >= 4 ? "Great job! You passed!" : "Keep practicing to improve"}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              )}
               
               {currentUnit && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-auto p-1 text-sm hover:bg-muted">
-                        <span className="max-w-[120px] truncate">{currentUnit.title}</span>
+                        <span className="max-w-[80px] sm:max-w-[120px] truncate">{currentUnit.title}</span>
                         <ChevronDown className="ml-1 h-3 w-3" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -290,31 +408,32 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
                     </DropdownMenuContent>
                   </DropdownMenu>
                   <ChevronRight className="h-4 w-4" />
-                  <span className="font-medium text-foreground max-w-[200px] truncate">{lesson?.title}</span>
+                  <span className="font-medium text-foreground max-w-[120px] sm:max-w-[200px] truncate">{lesson?.title}</span>
                 </div>
               )}
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               {progressData && (
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="flex items-center gap-1 sm:gap-2 text-sm">
                     <Target className="h-4 w-4 text-primary" />
-                    <span className="font-medium">
+                    <span className="font-medium text-xs sm:text-sm">
                       {progressData.currentIndex}/{progressData.total}
                     </span>
                   </div>
-                  <Progress value={progressData.percentage} className="w-20 h-2" />
-                  <span className="text-xs text-muted-foreground">
+                  <Progress value={progressData.percentage} className="w-12 sm:w-20 h-2" />
+                  <span className="text-xs text-muted-foreground hidden sm:inline">
                     {progressData.percentage}%
                   </span>
                 </div>
               )}
               
               {lesson?.completed && (
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
                   <CheckCircle className="w-3 h-3 mr-1" />
-                  Completed
+                  <span className="hidden sm:inline">Completed</span>
+                  <span className="sm:hidden">✓</span>
                 </Badge>
               )}
             </div>
@@ -322,120 +441,122 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar Navigation */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-24 bg-card/60 backdrop-blur border-border/40">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <BookOpen className="h-5 w-5" />
-                  Lesson Navigation
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Previous Lesson */}
-                {previousLesson && (
+      <div className="container mx-auto px-4 py-6 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
+          {/* Desktop Sidebar Navigation */}
+          {!isMobile && (
+            <div className="lg:col-span-1">
+              <Card className="sticky top-24 bg-card/60 backdrop-blur border-border/40">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <BookOpen className="h-5 w-5" />
+                    Lesson Navigation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Previous Lesson */}
+                  {previousLesson && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Previous
+                      </p>
+                      <Button asChild variant="ghost" size="sm" className="w-full justify-start h-auto p-3">
+                        <Link href={`/lesson/${previousLesson.id}`}>
+                          <div className="flex items-center gap-2 w-full">
+                            <ArrowLeft className="h-4 w-4 shrink-0" />
+                            <div className="text-left w-full overflow-hidden">
+                              <p className="font-medium text-sm truncate block">{previousLesson.title}</p>
+                              <p className="text-xs text-muted-foreground">Continue from here</p>
+                            </div>
+                          </div>
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {/* Current Lesson */}
                   <div className="space-y-2">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      Previous
+                      Current
                     </p>
-                    <Button asChild variant="ghost" size="sm" className="w-full justify-start h-auto p-3">
-                      <Link href={`/lesson/${previousLesson.id}`}>
-                        <div className="flex items-center gap-2 w-full">
-                          <ArrowLeft className="h-4 w-4 shrink-0" />
-                          <div className="text-left w-full overflow-hidden">
-                            <p className="font-medium text-sm truncate block">{previousLesson.title}</p>
-                            <p className="text-xs text-muted-foreground">Continue from here</p>
-                          </div>
+                    <div className="p-3 bg-purple-100/60 rounded-lg border border-purple-200/50">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+                        <div>
+                          <p className="font-medium text-sm">{lesson?.title}</p>
+                          <p className="text-xs text-muted-foreground">In progress</p>
                         </div>
-                      </Link>
-                    </Button>
-                  </div>
-                )}
-                
-                {/* Current Lesson */}
-                <div className="space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Current
-                  </p>
-                  <div className="p-3 bg-purple-100/60 rounded-lg border border-purple-200/50">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
-                      <div>
-                        <p className="font-medium text-sm">{lesson?.title}</p>
-                        <p className="text-xs text-muted-foreground">In progress</p>
                       </div>
                     </div>
                   </div>
-                </div>
-                
-                {/* Next Lesson */}
-                {nextLesson && (
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      Next
-                    </p>
-                    <Button 
-                      asChild 
-                      variant="ghost" 
-                      size="sm" 
-                      className="w-full justify-start h-auto p-3"
-                      disabled={!lesson?.completed}
-                    >
-                      <Link href={`/lesson/${nextLesson.id}`}>
-                        <div className="flex items-center gap-2 w-full">
-                          <div className="text-left w-full overflow-hidden">
-                            <p className="font-medium text-sm truncate block">{nextLesson.title}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {lesson?.completed ? "Ready to start" : "Complete current lesson first"}
-                            </p>
+                  
+                  {/* Next Lesson */}
+                  {nextLesson && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Next
+                      </p>
+                      <Button 
+                        asChild 
+                        variant="ghost" 
+                        size="sm" 
+                        className="w-full justify-start h-auto p-3"
+                        disabled={!lesson?.completed}
+                      >
+                        <Link href={`/lesson/${nextLesson.id}`}>
+                          <div className="flex items-center gap-2 w-full">
+                            <div className="text-left w-full overflow-hidden">
+                              <p className="font-medium text-sm truncate block">{nextLesson.title}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {lesson?.completed ? "Ready to start" : "Complete current lesson first"}
+                              </p>
+                            </div>
+                            <ArrowRight className="h-4 w-4 shrink-0" />
                           </div>
-                          <ArrowRight className="h-4 w-4 shrink-0" />
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
+                  
+                  <Separator />
+                  
+                  {/* Quiz Status */}
+                  {quizResult && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Quiz Results
+                      </p>
+                      <div className="p-3 bg-secondary/50 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Trophy className="h-4 w-4 text-yellow-500" />
+                          <span className="font-medium text-sm">
+                            {quizResult.correct}/{quizResult.total} correct
+                          </span>
                         </div>
-                      </Link>
-                    </Button>
-                  </div>
-                )}
-                
-                <Separator />
-                
-                {/* Quiz Status */}
-                {quizResult && (
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      Quiz Results
-                    </p>
-                    <div className="p-3 bg-secondary/50 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Trophy className="h-4 w-4 text-yellow-500" />
-                        <span className="font-medium text-sm">
-                          {quizResult.correct}/{quizResult.total} correct
-                        </span>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {quizResult.correct >= 4 ? "Great job! You passed!" : "Keep practicing to improve"}
+                        <div className="text-xs text-muted-foreground">
+                          {quizResult.correct >= 4 ? "Great job! You passed!" : "Keep practicing to improve"}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
           
           {/* Main Content */}
-          <div className="lg:col-span-3">
+          <div className={isMobile ? "col-span-1" : "lg:col-span-3"}>
             {lesson && lessonContent && (
-            <LessonViewer
-              lesson={lesson}
-              content={lessonContent}
-              onToggleComplete={handleMarkAsComplete}
-              onNavigateNext={handleNavigateNext}
-              nextLesson={nextLesson}
-              onQuizComplete={handleQuizComplete}
-              onRetryQuiz={handleRetryQuiz}
-              quizResult={quizResult}
-            />
+              <LessonViewer
+                lesson={lesson}
+                content={lessonContent}
+                onToggleComplete={handleMarkAsComplete}
+                onNavigateNext={handleNavigateNext}
+                nextLesson={nextLesson}
+                onQuizComplete={handleQuizComplete}
+                onRetryQuiz={handleRetryQuiz}
+                quizResult={quizResult}
+              />
             )}
           </div>
         </div>
