@@ -6,6 +6,33 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DynamicBackground } from "@/components/DynamicBackground";
 import { Footer } from "@/components/Footer";
+import { StructuredData } from "@/components/StructuredData";
+import { generateStructuredData } from "@/lib/seo";
+import { Metadata } from "next";
+import { createSEOMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createSEOMetadata({
+  title: "AP Ally - Free AI-Powered AP Test Prep & Study Guide",
+  description: "Transform your AP exam preparation with personalized AI tutoring. Get customized study plans, interactive lessons, and real-time progress tracking to achieve your target score. Free forever.",
+  keywords: [
+    "AP test prep",
+    "AP exam preparation", 
+    "free AP study guide",
+    "AI tutoring",
+    "AP practice tests",
+    "personalized study plan",
+    "AP Biology prep",
+    "AP Chemistry prep",
+    "AP Calculus prep",
+    "AP Physics prep",
+    "AP English prep",
+    "AP History prep",
+    "college board prep",
+    "high school test prep",
+    "exam preparation tool"
+  ],
+  canonicalUrl: "https://ap-ally.com",
+});
 
 const features = [
   {
@@ -71,8 +98,42 @@ const stats = [
 ];
 
 export default function Home() {
+  const websiteStructuredData = generateStructuredData('website');
+  const organizationStructuredData = generateStructuredData('organization');
+  const courseStructuredData = generateStructuredData('course', {
+    name: 'AP Test Preparation Course',
+    description: 'Comprehensive AP exam preparation with AI-powered personalized tutoring across all major AP subjects.',
+    subjects: ['AP Biology', 'AP Chemistry', 'AP Physics', 'AP Calculus', 'AP English', 'AP History'],
+    duration: 'P3M'
+  });
+
+  const faqStructuredData = generateStructuredData('faq', {
+    questions: [
+      {
+        question: 'Is AP Ally really free?',
+        answer: 'Yes! AP Ally is completely free to use. We\'re supported by advertising revenue, which allows us to provide high-quality AP prep content at no cost to students.'
+      },
+      {
+        question: 'How does AP Ally\'s AI personalization work?',
+        answer: 'Our AI analyzes your quiz responses, study patterns, and learning preferences to create customized study plans. The more you use AP Ally, the better our recommendations become.'
+      },
+      {
+        question: 'Which AP subjects does AP Ally support?',
+        answer: 'We support major AP subjects including Mathematics, Sciences, English, History, and Social Studies. We\'re continuously adding new subjects based on user demand.'
+      },
+      {
+        question: 'How accurate are the practice tests?',
+        answer: 'Our practice tests are designed to closely mirror actual AP exam formats and difficulty levels. They\'re created using official AP guidelines and reviewed by subject matter experts.'
+      }
+    ]
+  });
+
   return (
     <main className="relative overflow-hidden">
+      <StructuredData data={websiteStructuredData} />
+      <StructuredData data={organizationStructuredData} />
+      <StructuredData data={courseStructuredData} />
+      <StructuredData data={faqStructuredData} />
       <DynamicBackground />
       
       {/* Hero Section */}

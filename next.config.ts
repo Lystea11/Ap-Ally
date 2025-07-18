@@ -17,6 +17,16 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+    formats: ['image/webp', 'image/avif'],
+  },
+  // SEO optimizations
+  trailingSlash: false,
+  poweredByHeader: false,
+  compress: true,
+  // Enable experimental features for better performance
+  experimental: {
+    optimizeCss: true,
+    optimizePackageImports: ['lucide-react'],
   },
 };
 

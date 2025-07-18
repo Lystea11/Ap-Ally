@@ -4,12 +4,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { CookieConsent } from "@/components/CookieConsent";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { createSEOMetadata } from "@/lib/seo";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "AP Ally",
-  description: "Your personalized GPT-powered AP study tool.",
-};
+export const metadata: Metadata = createSEOMetadata();
 
 export default function RootLayout({
   children,
@@ -25,12 +23,20 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap"
           rel="stylesheet"
         />
-      <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css"
-      />
-      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6379242266018309"
-           crossOrigin="anonymous"></script>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css"
+        />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#4f46e5" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="AP Ally" />
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6379242266018309"
+             crossOrigin="anonymous"></script>
       </head>
       <body className="font-body antialiased" suppressHydrationWarning>
         <AppProviders>

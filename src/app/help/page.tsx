@@ -1,15 +1,29 @@
-import { ArrowLeft, HelpCircle, Mail, MessageSquare, FileText, AlertCircle, Lightbulb, Book, Users, Phone } from "lucide-react";
+import { ArrowLeft, HelpCircle, Mail, MessageSquare, FileText, AlertCircle, Lightbulb, Book, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Footer } from "@/components/Footer";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import Link from "next/link";
 
-export const metadata = {
+import { createSEOMetadata } from "@/lib/seo";
+
+export const metadata = createSEOMetadata({
   title: "Help Center - AP Ally",
-  description: "Get help and support for AP Ally. Find answers to common questions and contact our support team.",
-};
+  description: "Get help and support for AP Ally. Find answers to common questions about our free AI-powered AP test prep platform and contact our support team.",
+  keywords: [
+    "AP Ally help",
+    "AP test prep support",
+    "AP study guide help",
+    "contact support",
+    "AP prep FAQ",
+    "AP exam help",
+    "study help",
+    "test preparation support"
+  ],
+  canonicalUrl: "https://ap-ally.com/help",
+});
 
 export default function HelpCenterPage() {
   const faqs = [
@@ -95,6 +109,12 @@ export default function HelpCenterPage() {
       <div className="container max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
+          <Breadcrumbs 
+            items={[
+              { label: "Help Center", href: "/help" }
+            ]}
+            className="mb-4"
+          />
           <Link href="/">
             <Button variant="ghost" className="mb-4 -ml-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
