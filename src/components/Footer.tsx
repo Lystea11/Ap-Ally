@@ -156,7 +156,7 @@ export function Footer() {
             {/* Social Media Icons */}
             <div className="flex items-center gap-3">
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/personalizedailearning/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg bg-card/80 hover:bg-primary/10 transition-all duration-200 group"
@@ -191,7 +191,7 @@ export function Footer() {
               </a>
               
               <a
-                href="https://linkedin.com"
+                href="https://www.linkedin.com/company/ap-ally/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg bg-card/80 hover:bg-primary/10 transition-all duration-200 group"
@@ -217,7 +217,7 @@ export function Footer() {
               </a>
               
               <a
-                href="https://tiktok.com"
+                href="https://www.tiktok.com/@ap_ally"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg bg-card/80 hover:bg-primary/10 transition-all duration-200 group"
