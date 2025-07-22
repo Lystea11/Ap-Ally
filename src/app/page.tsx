@@ -13,7 +13,7 @@ import { createSEOMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createSEOMetadata({
   title: "AP Ally - Free AI-Powered AP Test Prep & Study Guide",
-  description: "Transform your AP exam preparation with personalized AI tutoring. Get customized study plans, interactive lessons, and real-time progress tracking to achieve your target score. Free forever.",
+  description: "Master AP exams with AI-powered study plans, interactive lessons, and progress tracking. Free AP test prep for all subjects.",
   keywords: [
     "AP test prep",
     "AP exam preparation", 

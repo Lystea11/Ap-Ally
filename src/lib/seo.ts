@@ -21,7 +21,7 @@ export interface BreadcrumbItem {
 
 export const DEFAULT_SEO = {
   title: 'AP Ally - Free AI-Powered AP Test Prep & Study Guide',
-  description: 'Transform your AP exam preparation with personalized AI tutoring. Get customized study plans, interactive lessons, and real-time progress tracking. Free forever.',
+  description: 'Master AP exams with AI-powered study plans, interactive lessons, and progress tracking. Free AP test prep for all subjects.',
   keywords: [
     'AP test prep',
     'AP exam preparation',
