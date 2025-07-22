@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://ap-ally.com/sitemap.xml
+
+# Block crawling of admin and auth pages
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /auth/
+
+# Allow crawling of public pages
+Allow: /
+Allow: /dashboard
+Allow: /practice-quiz
+Allow: /subjects/
+Allow: /help
+Allow: /privacy-policy
+Allow: /terms-of-service
+
+# Crawl delay for better server performance
+Crawl-delay: 1
