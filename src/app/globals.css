@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 225 100% 97%; /* Restored to a solid color */
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 231 48% 48%; /* Deep indigo */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 225 50% 90%;
+    --secondary-foreground: 240 10% 3.9%;
+    --muted: 225 50% 90%;
+    --muted-foreground: 240 5% 45.1%;
+    --accent: 261 44% 63%; /* Soft violet */
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 231 20% 85%;
+    --input: 231 20% 90%;
+    --ring: 231 48% 48%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 231 48% 48%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65.1%;
+    --accent: 261 44% 63%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 231 48% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+  /* Improve touch targets for mobile */
+  button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improve input field touch targets */
+  input, textarea, select {
+    min-height: 44px;
+  }
+  
+  /* Improve clickable area for radio buttons and checkboxes */
+  input[type="radio"], input[type="checkbox"] {
+    min-height: 20px;
+    min-width: 20px;
+  }
+  
+  /* Improve scrollable content */
+  .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevent zoom on input focus */
+  input, textarea, select {
+    font-size: 16px;
+  }
+}
+
+@layer utilities {
+  @keyframes-moving-lines {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-moving-lines {
+    animation: moving-lines 40s linear infinite;
+  }
+}
