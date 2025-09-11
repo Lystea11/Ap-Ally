@@ -234,7 +234,7 @@ export default function DashboardPage() {
                 </CardFooter>
               </Card>
 
-              <Link href="/onboarding" className="block">
+              <Link href="/add-class" className="block">
                 <Card className="flex flex-col items-center justify-center text-center h-full min-h-[200px] border-2 border-dashed border-muted-foreground/30 hover:border-primary hover:bg-primary/5 transition-all duration-300 ease-in-out group">
                   <div className="flex flex-col items-center justify-center p-6">
                     <PlusCircle className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground/50 group-hover:text-primary transition-colors" />

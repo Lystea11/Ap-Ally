@@ -12,6 +12,7 @@ interface RoadmapRecapProps {
   roadmap: Roadmap;
   quizResults: string;
   onStartJourney: () => void;
+  isAuthenticated?: boolean;
 }
 
 interface AnalysisResult {
@@ -23,7 +24,7 @@ interface AnalysisResult {
   estimatedWeeks: number;
 }
 
-export function RoadmapRecap({ roadmap, quizResults, onStartJourney }: RoadmapRecapProps) {
+export function RoadmapRecap({ roadmap, quizResults, onStartJourney, isAuthenticated = true }: RoadmapRecapProps) {
   const analysis = useMemo((): AnalysisResult => {
     // Parse quiz results to identify patterns
     const questions = quizResults.split("\n\n");

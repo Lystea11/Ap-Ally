@@ -11,6 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { withAIResilience } from '@/lib/ai-resilience';
+import { RAGService } from '@/lib/rag-service';
 
 const GenerateRoadmapInputSchema = z.object({
   apCourse: z.string().describe('The AP course the student is studying for.'),
@@ -34,7 +35,14 @@ const RoadmapSchema = z.object({
 
 const GenerateRoadmapOutputSchema = z.object({
   roadmap: RoadmapSchema,
-  progress: z.string().describe('One-sentence summary of what has been generated.')
+  progress: z.string().describe('One-sentence summary of what has been generated.'),
+  citations: z.array(z.object({
+    id: z.string(),
+    course: z.string(),
+    chunkIndex: z.number(),
+    text: z.string(),
+    relevanceScore: z.number()
+  })).optional().describe('Citations from textbook content used in the roadmap.')
 });
 export type GenerateRoadmapOutput = z.infer<typeof GenerateRoadmapOutputSchema>;
 
@@ -49,14 +57,22 @@ export async function generateRoadmap(input: GenerateRoadmapInput): Promise<Gene
   );
 }
 
+const promptSchema = z.object({
+  apCourse: z.string(),
+  quizResults: z.string(),
+  textbookContext: z.string().optional()
+});
+
 const prompt = ai.definePrompt({
   name: 'generateRoadmapPrompt',
-  input: {schema: GenerateRoadmapInputSchema},
+  input: {schema: promptSchema},
   output: {schema: GenerateRoadmapOutputSchema},
   prompt: `You are an expert AP study guide creator. Based on the student's AP course and detailed diagnostic quiz results, generate a personalized study roadmap that focuses on their specific strengths and weaknesses.
 
   AP Course: {{{apCourse}}}
   Diagnostic Quiz Results: {{{quizResults}}}
+
+{{{textbookContext}}}
 
 Analyze the quiz results to identify:
 1. Units/topics where the student performed well (can be reviewed more quickly)
@@ -82,10 +98,28 @@ const generateRoadmapFlow = ai.defineFlow(
     outputSchema: GenerateRoadmapOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    // Get RAG context for course structure
+    const ragService = new RAGService();
+    const ragResult = await ragService.enhanceRoadmapPrompt(
+      '', // We'll use the enhanced prompt directly
+      input.apCourse
+    );
+
+    const textbookContext = ragResult.citations.length > 0 
+      ? ragService.formatContextForPrompt({ chunks: [], citations: ragResult.citations })
+      : '';
+
+
+    const {output} = await prompt({
+      apCourse: input.apCourse,
+      quizResults: input.quizResults,
+      textbookContext
+    });
+    
     return {
       roadmap: output!.roadmap,
-      progress: "Generated a personalized study roadmap based on the student's AP course and diagnostic quiz results."
+      progress: "Generated a personalized study roadmap based on the student's AP course and diagnostic quiz results.",
+      citations: ragResult.citations
     };
   }
 );

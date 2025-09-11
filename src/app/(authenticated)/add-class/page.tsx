@@ -1,4 +1,4 @@
-// src/app/(authenticated)/onboarding/page.tsx
+// src/app/(authenticated)/add-class/page.tsx
 
 "use client";
 
@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AuthContext } from "@/context/AuthContext";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -27,10 +27,11 @@ import { QuizEngine } from "@/components/QuizEngine";
 import { RoadmapRecap } from "@/components/RoadmapRecap";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { createClassAPI } from "@/lib/api-client";
+import Link from "next/link";
 
 const apCourseSections = [
   {
@@ -118,14 +119,14 @@ const formSchema = z.object({
 
 type OnboardingFormValues = z.infer<typeof formSchema>;
 
-export default function OnboardingPage() {
+export default function AddClassPage() {
   const router = useRouter();
   const { setRoadmap } = useStudy();
   const { toast } = useToast();
   const authContext = useContext(AuthContext);
   
   if (!authContext) {
-    throw new Error("OnboardingPage must be used within AuthProvider");
+    throw new Error("AddClassPage must be used within AuthProvider");
   }
   
   const { user } = authContext;
@@ -288,11 +289,21 @@ return (
 
     {!loading && (
       <div className="container mx-auto max-w-2xl py-6 sm:py-12 px-4">
+        {/* Back to Dashboard Link */}
+        <div className="mb-6">
+          <Link href="/dashboard">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+
         <Card className="shadow-2xl">
           <CardHeader>
             <Progress value={progressValue} className="mb-4 h-2" />
             <CardTitle className="font-headline text-2xl sm:text-3xl">
-              Let's get you set up
+              Add a New AP Class
             </CardTitle>
             <CardDescription className="text-sm sm:text-base">
               {step === 1 && !isCustomFlow &&
@@ -573,6 +584,7 @@ return (
                 roadmap={generatedRoadmap}
                 quizResults={isCustomFlow ? "" : quizAnswers}
                 onStartJourney={handleStartJourney}
+                isAuthenticated={true}
               />
             )}
 

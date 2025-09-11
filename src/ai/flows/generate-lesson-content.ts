@@ -5,6 +5,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { withAIResilience } from '@/lib/ai-resilience';
 import { youtubeVideos, getRelevantVideos } from '@/data/youtube-videos';
+import { RAGService } from '@/lib/rag-service';
 
 const GenerateLessonContentInputSchema = z.object({
   topic: z.string().describe('The topic for which to generate lesson content.'),
@@ -49,6 +50,13 @@ const ContentBlockSchema = z.union([MarkdownContentSchema, TableContentSchema, D
 const GenerateLessonContentOutputSchema = z.object({
   content: z.array(ContentBlockSchema).describe('An array of content blocks, which can be of type markdown, table, diagram, or video.'),
   practiceQuestions: z.array(PracticeQuestionSchema).length(5).describe('An array of exactly 5 interactive practice questions.'),
+  citations: z.array(z.object({
+    id: z.string(),
+    course: z.string(),
+    chunkIndex: z.number(),
+    text: z.string(),
+    relevanceScore: z.number()
+  })).optional().describe('Citations from textbook content used in the lesson.'),
 });
 export type GenerateLessonContentOutput = z.infer<typeof GenerateLessonContentOutputSchema>;
 
@@ -63,9 +71,16 @@ export async function generateLessonContent(input: GenerateLessonContentInput): 
   );
 }
 
+const promptSchema = z.object({
+  topic: z.string(),
+  apSubject: z.string().optional(),
+  availableVideos: z.string(),
+  textbookContext: z.string().optional()
+});
+
 const prompt = ai.definePrompt({
   name: 'generateLessonContentPrompt',
-  input: {schema: GenerateLessonContentInputSchema},
+  input: {schema: promptSchema},
   output: {schema: GenerateLessonContentOutputSchema},
   prompt: `You are an expert educator creating lesson content for AP level courses. Your goal is to create a clear and structured lesson on a specific topic, along with interactive practice questions.
 
@@ -74,6 +89,8 @@ AP Subject: {{{apSubject}}}
 
 **Available YouTube Videos:**
 {{{availableVideos}}}
+
+{{{textbookContext}}}
 
 **Instructions:**
 1.  **Lesson Content ('content' field):**
@@ -114,10 +131,29 @@ const generateLessonContentFlow = ai.defineFlow(
       ? relevantVideos.map(video => `- ${video.title}: ${video.url} (Topics: ${video.topics.join(', ')})`).join('\n')
       : 'No relevant videos available for this topic.';
 
+    // Get RAG context from textbooks
+    const ragService = new RAGService();
+    const ragResult = await ragService.enhanceLessonPrompt(
+      '', // We'll use the enhanced prompt directly
+      input.topic,
+      input.apSubject
+    );
+
+    const textbookContext = ragResult.citations.length > 0 
+      ? ragService.formatContextForPrompt({ chunks: [], citations: ragResult.citations })
+      : '';
+
+
     const {output} = await prompt({
-      ...input,
-      availableVideos
+      topic: input.topic,
+      apSubject: input.apSubject || '',
+      availableVideos,
+      textbookContext
     });
-    return output!;
+    
+    return {
+      ...output!,
+      citations: ragResult.citations
+    };
   }
 );

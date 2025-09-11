@@ -13,6 +13,7 @@ import rehypeKatex from 'rehype-katex';
 import { PracticeQuiz } from "./PracticeQuiz";
 import { JsonTable } from './JsonTable';
 import { YouTubeEmbed } from './YouTubeEmbed';
+import { CitationDisplay, Citation } from './CitationDisplay';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useState, useEffect, useRef } from 'react';
 
@@ -196,6 +197,11 @@ export function LessonViewer({ lesson, content, onToggleComplete, onNavigateNext
             </div>
           </div>
         </div>
+      )}
+
+      {/* Citations */}
+      {content.citations && content.citations.length > 0 && (
+        <CitationDisplay citations={content.citations} />
       )}
 
     </div>

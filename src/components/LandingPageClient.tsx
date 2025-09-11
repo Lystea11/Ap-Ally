@@ -45,6 +45,11 @@ export function LandingPageClient() {
   }, [isAuthenticated, router]);
 
   const handleGetStarted = () => {
+    // Redirect directly to onboarding without requiring login
+    router.push("/onboarding");
+  };
+
+  const handleSignIn = () => {
     hasTriedLogin.current = true;
 
     login().catch((error) => {
@@ -96,7 +101,7 @@ export function LandingPageClient() {
       <Button
         size="lg"
         variant="outline"
-        onClick={handleGetStarted}
+        onClick={handleSignIn}
         disabled={loading}
         className="w-full sm:w-auto"
       >
