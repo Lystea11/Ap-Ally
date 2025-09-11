@@ -56,9 +56,12 @@ export class TextbookIngestionService {
   }
 
   async deleteCourseDocs(courseName: string): Promise<void> {
-    
     try {
-      await this.index.deleteAll();
+      await this.index.deleteMany({
+        where: {
+          course: courseName,
+        },
+      });
     } catch (error) {
       console.error(`Error deleting documents for course ${courseName}:`, error);
       throw error;
