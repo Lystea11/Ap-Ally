@@ -14,6 +14,7 @@ import { useAdTrigger } from "@/context/AdContext";
 import { useGamification } from "@/hooks/useGamification";
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
+import { FadeText } from '@/components/ui/fade-text';
 
 interface QuizQuestion {
   type: "leq" | "laq";
@@ -355,7 +356,7 @@ export default function FreeResponseQuizPage() {
               className="h-14 text-sm px-3"
             >
               <RotateCcw className="mr-1 h-4 w-4 flex-shrink-0" />
-              <span className="truncate">Review Questions & Feedback</span>
+              <FadeText>Review Questions & Feedback</FadeText>
             </Button>
 
             <Button
@@ -370,7 +371,7 @@ export default function FreeResponseQuizPage() {
               className="h-14 text-sm px-3"
             >
               <ArrowLeft className="mr-1 h-4 w-4 flex-shrink-0" />
-              <span className="truncate">Back to Dashboard</span>
+              <FadeText>Back to Dashboard</FadeText>
             </Button>
           </div>
 
@@ -772,7 +773,7 @@ export default function FreeResponseQuizPage() {
                   className="bg-green-600 hover:bg-green-700 px-3 py-2 text-sm"
                 >
                   <Brain className="mr-2 h-4 w-4" />
-                  <span className="truncate">View Results & Feedback</span>
+                  <FadeText>View Results & Feedback</FadeText>
                 </Button>
               ) : (
                 <Button 
@@ -781,9 +782,9 @@ export default function FreeResponseQuizPage() {
                   className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed px-3 py-2 text-sm"
                 >
                   <Brain className="mr-2 h-4 w-4" />
-                  <span className="truncate">
+                  <FadeText>
                     {isAllQuestionsAnswered() ? 'Submit for AI Grading' : `Answer All Questions (${getAllAnsweredCount()}/${quizData.questions.length})`}
-                  </span>
+                  </FadeText>
                 </Button>
               )
             )}

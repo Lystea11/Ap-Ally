@@ -19,6 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { FadeText } from "@/components/ui/fade-text";
 import type { Lesson } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useAdTrigger } from "@/context/AdContext";
@@ -328,8 +329,8 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
                             <Link href={`/lesson/${previousLesson.id}`}>
                               <div className="flex items-center gap-2 w-full">
                                 <ArrowLeft className="h-4 w-4 shrink-0" />
-                                <div className="text-left w-full overflow-hidden">
-                                  <p className="font-medium text-sm truncate block">{previousLesson.title}</p>
+                                <div className="text-left w-full">
+                                  <FadeText className="font-medium text-sm">{previousLesson.title}</FadeText>
                                   <p className="text-xs text-muted-foreground">Continue from here</p>
                                 </div>
                               </div>
@@ -370,8 +371,8 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
                           >
                             <Link href={`/lesson/${nextLesson.id}`}>
                               <div className="flex items-center gap-2 w-full">
-                                <div className="text-left w-full overflow-hidden">
-                                  <p className="font-medium text-sm truncate block">{nextLesson.title}</p>
+                                <div className="text-left w-full">
+                                  <FadeText className="font-medium text-sm">{nextLesson.title}</FadeText>
                                   <p className="text-xs text-muted-foreground">
                                     {lesson?.completed ? "Ready to start" : "Complete current lesson first"}
                                   </p>
@@ -414,33 +415,41 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-auto p-1 text-sm hover:bg-muted">
-                        <span className="max-w-[80px] sm:max-w-[120px] truncate">{currentUnit.title}</span>
+                        <FadeText maxWidth="80px" className="sm:max-w-[120px]">{currentUnit.title}</FadeText>
                         <ChevronDown className="ml-1 h-3 w-3" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-60">
+                    <DropdownMenuContent align="start" className="w-72 p-2 bg-background/95 backdrop-blur-sm border border-border/50 shadow-lg">
                       {currentUnit.lessons.map((unitLesson) => (
-                        <DropdownMenuItem key={unitLesson.id} asChild>
-                          <Link 
+                        <DropdownMenuItem key={unitLesson.id} asChild className="p-0 mb-1 last:mb-0">
+                          <Link
                             href={`/lesson/${unitLesson.id}`}
-                            className={`flex items-center gap-2 ${unitLesson.id === lessonId ? 'bg-accent' : ''}`}
+                            className={`flex items-center gap-3 p-3 rounded-md transition-all duration-200 hover:bg-muted/80 focus:bg-muted/80 ${
+                              unitLesson.id === lessonId
+                                ? 'bg-primary/10 border border-primary/20 text-primary'
+                                : 'text-foreground hover:text-foreground'
+                            }`}
                           >
-                            <div className="flex items-center gap-2 flex-1 overflow-hidden">
-                              {unitLesson.completed && (
-                                <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              {unitLesson.completed ? (
+                                <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0" />
+                              ) : (
+                                <div className="h-4 w-4 shrink-0 rounded-full border-2 border-muted-foreground/30" />
                               )}
-                              <span className="truncate block max-w-full">{unitLesson.title}</span>
+                              <div className="flex-1 min-w-0">
+                                <FadeText className="block font-medium text-sm leading-tight">{unitLesson.title}</FadeText>
+                                {unitLesson.completed && (
+                                  <p className="text-xs text-muted-foreground mt-0.5">Completed</p>
+                                )}
+                              </div>
                             </div>
-                            {unitLesson.id === lessonId && (
-                              <div className="w-2 h-2 bg-primary rounded-full shrink-0" />
-                            )}
                           </Link>
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
                   <ChevronRight className="h-4 w-4" />
-                  <span className="font-medium text-foreground max-w-[120px] sm:max-w-[200px] truncate">{lesson?.title}</span>
+                  <FadeText maxWidth="120px" className="font-medium text-foreground sm:max-w-[200px]">{lesson?.title}</FadeText>
                 </div>
               )}
             </div>
@@ -496,8 +505,8 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
                         <Link href={`/lesson/${previousLesson.id}`}>
                           <div className="flex items-center gap-2 w-full">
                             <ArrowLeft className="h-4 w-4 shrink-0" />
-                            <div className="text-left w-full overflow-hidden">
-                              <p className="font-medium text-sm truncate block">{previousLesson.title}</p>
+                            <div className="text-left w-full">
+                              <FadeText className="font-medium text-sm">{previousLesson.title}</FadeText>
                               <p className="text-xs text-muted-foreground">Continue from here</p>
                             </div>
                           </div>
@@ -537,8 +546,8 @@ export default function ClientLessonPage({ lessonId }: { lessonId: string }) {
                       >
                         <Link href={`/lesson/${nextLesson.id}`}>
                           <div className="flex items-center gap-2 w-full">
-                            <div className="text-left w-full overflow-hidden">
-                              <p className="font-medium text-sm truncate block">{nextLesson.title}</p>
+                            <div className="text-left w-full">
+                              <FadeText className="font-medium text-sm">{nextLesson.title}</FadeText>
                               <p className="text-xs text-muted-foreground">
                                 {lesson?.completed ? "Ready to start" : "Complete current lesson first"}
                               </p>

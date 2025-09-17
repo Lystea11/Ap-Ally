@@ -275,9 +275,6 @@ export function PracticeQuizGenerator({ roadmap, apCourse, classId }: PracticeQu
                           className="text-sm cursor-pointer flex-1 flex items-center justify-between"
                         >
                           <span>Unit {index + 1}: {cleanTitle}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {unit.lessons.length} lessons
-                          </Badge>
                         </label>
                       </div>
                     );

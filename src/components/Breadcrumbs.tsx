@@ -4,6 +4,7 @@ import { ChevronRight, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BreadcrumbItem, generateBreadcrumbStructuredData } from '@/lib/seo';
 import { StructuredData } from './StructuredData';
+import { FadeText } from '@/components/ui/fade-text';
 
 interface BreadcrumbsProps {
   items: BreadcrumbItem[];
@@ -40,7 +41,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
                   aria-current="page"
                 >
                   {index === 0 && <Home className="mr-1 h-4 w-4 inline" />}
-                  {item.label}
+                  <FadeText maxWidth="200px" className="inline">{item.label}</FadeText>
                 </span>
               ) : (
                 <Link
@@ -48,7 +49,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
                   className="hover:text-foreground transition-colors"
                 >
                   {index === 0 && <Home className="mr-1 h-4 w-4 inline" />}
-                  {item.label}
+                  <FadeText maxWidth="150px" className="inline">{item.label}</FadeText>
                 </Link>
               )}
             </li>

@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, BookOpen, Target, Trophy, AlertCircle, HelpCircle } from "lucide-react";
+import { FadeText } from "@/components/ui/fade-text";
 
 export default function ClassDashboardPage() {
   const params = useParams();
@@ -123,7 +124,7 @@ export default function ClassDashboardPage() {
               {roadmap && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <BookOpen className="h-4 w-4" />
-                  <span className="font-medium text-foreground max-w-[300px] truncate">{roadmap.title}</span>
+                  <FadeText maxWidth="300px" className="font-medium text-foreground">{roadmap.title}</FadeText>
                 </div>
               )}
             </div>

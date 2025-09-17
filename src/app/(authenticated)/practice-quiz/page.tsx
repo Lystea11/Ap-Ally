@@ -15,6 +15,7 @@ import { useAdTrigger } from "@/context/AdContext";
 import { useGamification } from "@/hooks/useGamification";
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
+import { FadeText } from '@/components/ui/fade-text';
 
 interface QuizQuestion {
   type: "mcq" | "leq" | "laq";
@@ -424,12 +425,12 @@ export default function PracticeQuizPage() {
                     {isGeneratingFeedback ? (
                       <>
                         <LoadingSpinner className="mr-1 h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">Generating AI Analysis...</span>
+                        <FadeText>Generating AI Analysis...</FadeText>
                       </>
                     ) : (
                       <>
                         <Brain className="mr-1 h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">Get AI Performance Analysis</span>
+                        <FadeText>Get AI Performance Analysis</FadeText>
                       </>
                     )}
                   </Button>
@@ -440,7 +441,7 @@ export default function PracticeQuizPage() {
                     className="h-14 text-sm px-3"
                   >
                     <RotateCcw className="mr-1 h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">Review Questions & Answers</span>
+                    <FadeText>Review Questions & Answers</FadeText>
                   </Button>
 
                   <Button
@@ -455,7 +456,7 @@ export default function PracticeQuizPage() {
                     className="h-14 text-sm px-3"
                   >
                     <ArrowLeft className="mr-1 h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">Back to Dashboard</span>
+                    <FadeText>Back to Dashboard</FadeText>
                   </Button>
                 </div>
               );
@@ -468,7 +469,7 @@ export default function PracticeQuizPage() {
                     className="bg-blue-600 hover:bg-blue-700 h-14 text-sm px-3"
                   >
                     <RotateCcw className="mr-1 h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">Review Questions & Answers</span>
+                    <FadeText>Review Questions & Answers</FadeText>
                   </Button>
 
                   <Button
@@ -483,7 +484,7 @@ export default function PracticeQuizPage() {
                     className="h-14 text-sm px-3"
                   >
                     <ArrowLeft className="mr-1 h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">Back to Dashboard</span>
+                    <FadeText>Back to Dashboard</FadeText>
                   </Button>
                 </div>
               );
@@ -921,9 +922,9 @@ export default function PracticeQuizPage() {
                     disabled={!isAllQuestionsAnswered()}
                     className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed px-3 py-2 text-sm"
                   >
-                    <span className="truncate">
+                    <FadeText>
                       {isAllQuestionsAnswered() ? 'Finish Quiz' : `Answer All Questions (${getAllAnsweredCount()}/${quizData.questions.length})`}
-                    </span>
+                    </FadeText>
                   </Button>
                 )}
               </>
