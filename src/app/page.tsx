@@ -1,10 +1,7 @@
 // src/app/page.tsx
 
-import { GraduationCap, Brain, Target, TrendingUp, BookOpen, Users, Star, ArrowRight, CheckCircle2, Zap, Award, Clock } from "lucide-react";
+import { GraduationCap, TrendingUp, BookOpen, CheckCircle2, Clock, ArrowUpRight, Sparkles } from "lucide-react";
 import { LandingPageClient } from "@/components/LandingPageClient";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { DynamicBackground } from "@/components/DynamicBackground";
 import { Footer } from "@/components/Footer";
 import { StructuredData } from "@/components/StructuredData";
 import { generateStructuredData } from "@/lib/seo";
@@ -16,7 +13,7 @@ export const metadata: Metadata = createSEOMetadata({
   description: "Master AP exams with AI-powered study plans, interactive lessons, and progress tracking. Free AP test prep for all subjects.",
   keywords: [
     "AP test prep",
-    "AP exam preparation", 
+    "AP exam preparation",
     "free AP study guide",
     "AI tutoring",
     "AP practice tests",
@@ -34,67 +31,93 @@ export const metadata: Metadata = createSEOMetadata({
   canonicalUrl: "https://ap-ally.com",
 });
 
-const features = [
+// Bento-grid style content items
+const bentoItems = [
   {
-    icon: Brain,
+    size: "lg",
+    icon: GraduationCap,
     title: "AI-Powered Learning",
-    description: "Advanced AI creates personalized study plans based on your strengths, weaknesses, and learning style"
+    description: "Advanced algorithms analyze your strengths and weaknesses to create perfect study path",
+    highlight: "Adaptive technology",
+    gradient: "from-blue-500/10 to-indigo-500/10"
   },
   {
-    icon: Target,
-    title: "Targeted Practice",
-    description: "Focus on your problem areas with customized quizzes and exercises designed to improve your weak spots"
+    size: "sm",
+    icon: Clock,
+    title: "Save 40+ Hours",
+    description: "Study smarter with targeted lessons that skip what you already know",
+    number: "40+",
+    label: "Hours Saved",
+    gradient: "from-emerald-500/10 to-teal-500/10"
   },
   {
+    size: "sm",
     icon: TrendingUp,
-    title: "Progress Tracking",
-    description: "Real-time analytics show your improvement over time with detailed performance insights"
+    title: "Score Higher",
+    description: "Students see an average 1.2 point increase on their AP scores",
+    number: "+1.2",
+    label: "Points Gained",
+    gradient: "from-amber-500/10 to-orange-500/10"
   },
   {
+    size: "md",
     icon: BookOpen,
-    title: "Comprehensive Content",
-    description: "Access complete AP curriculum coverage with interactive lessons, practice tests, and study materials"
+    title: "Complete AP Coverage",
+    description: "Every major AP subject with comprehensive curriculum, from Biology to Calculus AB/BC",
+    subjects: ["Biology", "Chemistry", "Physics", "Calc", "English", "History"],
+    gradient: "from-purple-500/10 to-pink-500/10"
   },
   {
-    icon: Zap,
-    title: "Instant Feedback",
-    description: "Get immediate explanations for wrong answers and detailed solutions to master concepts quickly"
+    size: "md",
+    icon: Sparkles,
+    title: "Instant Feedback Loop",
+    description: "Get detailed explanations immediately after every question. Learn from mistakes in real-time.",
+    gradient: "from-rose-500/10 to-red-500/10"
   },
-  {
-    icon: Award,
-    title: "Exam Simulation",
-    description: "Practice with realistic AP exam conditions to build confidence and reduce test anxiety"
-  }
 ];
 
-const steps = [
+const subjects = [
+  "AP Biology",
+  "AP Chemistry",
+  "AP Physics 1",
+  "AP Physics C",
+  "AP Calculus AB",
+  "AP Calculus BC",
+  "AP English Lang",
+  "AP English Lit",
+  "AP US History",
+  "AP World History",
+  "AP Psychology",
+  "AP Statistics"
+];
+
+const howItWorks = [
   {
-    step: "1",
-    title: "Take Assessment",
-    description: "Complete our diagnostic test to identify your current knowledge level and learning gaps"
+    title: "Assess",
+    description: "Quick diagnostic identifies your current level",
+    duration: "5 min"
   },
   {
-    step: "2",
-    title: "Get Your Plan",
-    description: "Receive a personalized study roadmap tailored to your goals and timeline"
+    title: "Plan",
+    description: "AI generates your personalized roadmap",
+    duration: "Instant"
   },
   {
-    step: "3",
-    title: "Study Smart",
-    description: "Follow interactive lessons, complete practice problems, and track your progress"
+    title: "Learn",
+    description: "Interactive lessons adapted to your pace",
+    duration: "Ongoing"
   },
   {
-    step: "4",
-    title: "Ace Your Exam",
-    description: "Take practice exams and get final review materials to maximize your AP score"
+    title: "Dominate",
+    description: "Ace your AP exam with confidence",
+    duration: "Exam Day"
   }
 ];
 
 const stats = [
-  { label: "Average Score Increase", value: "1.2 points", icon: TrendingUp },
-  { label: "Students Helped", value: "10,000+", icon: Users },
-  { label: "Practice Questions", value: "50,000+", icon: BookOpen },
-  { label: "Success Rate", value: "94%", icon: Star }
+  { value: "10,000+", label: "Students" },
+  { value: "94%", label: "Success Rate" },
+  { value: "50,000+", label: "Questions" },
 ];
 
 export default function Home() {
@@ -129,170 +152,250 @@ export default function Home() {
   });
 
   return (
-    <main className="relative overflow-hidden">
+    <main className="min-h-screen bg-background">
       <StructuredData data={websiteStructuredData} />
       <StructuredData data={organizationStructuredData} />
       <StructuredData data={courseStructuredData} />
       <StructuredData data={faqStructuredData} />
-      <DynamicBackground />
-      
-      {/* Hero Section */}
-      <section className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-16 text-center">
-        <div className="container max-w-7xl">
-          <Badge variant="secondary" className="mb-6 bg-primary/10 text-primary border-primary/20 text-sm">
-            🚀 AI-Powered AP Exam Preparation
-          </Badge>
-          
-          <div className="flex items-center justify-center gap-3 sm:gap-4 mb-6">
-            <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-primary/10 rounded-2xl">
-              <GraduationCap className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+
+      {/* Hero */}
+      <section className="relative overflow-hidden px-4 py-20 md:py-32 lg:py-40">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl" />
+
+        <div className="relative container max-w-7xl mx-auto">
+          <div className="max-w-4xl">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 border border-primary/10 text-sm text-primary/80 mb-8">
+              <Sparkles className="w-4 h-4" />
+              <span>Free forever. AI-powered.</span>
             </div>
-            <h1 className="font-headline text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tighter text-primary">
-              AP Ally
+
+            <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.05] mb-8">
+              Ace your AP
+              <br />
+              <span className="bg-gradient-to-r from-primary via-indigo-600 to-primary bg-clip-text text-transparent">
+                exams.
+              </span>
             </h1>
+
+            <p className="text-xl md:text-2xl text-foreground/60 leading-relaxed mb-12 max-w-2xl">
+              Personalized AI tutoring that adapts to how you learn.
+              Get your perfect study plan in minutes.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <LandingPageClient />
+
+              <div className="flex items-center gap-6 text-sm text-foreground/50">
+                <span className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  No credit card
+                </span>
+                <span className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  Cancel anytime
+                </span>
+              </div>
+            </div>
           </div>
-          
-          <p className="max-w-4xl mx-auto text-lg sm:text-xl md:text-2xl text-foreground/80 mb-8 leading-relaxed px-2">
-            Transform your AP exam preparation with personalized AI tutoring. Get customized study plans, 
-            interactive lessons, and real-time progress tracking to achieve your target score.
-          </p>
-          
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-12 px-2">
-            <Badge variant="outline" className="bg-background/80 backdrop-blur text-xs sm:text-sm">
-              <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              Save 40+ hours of study time
-            </Badge>
-            <Badge variant="outline" className="bg-background/80 backdrop-blur text-xs sm:text-sm">
-              <Target className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              Increase scores by 1.2 points on average
-            </Badge>
-            <Badge variant="outline" className="bg-background/80 backdrop-blur text-xs sm:text-sm">
-              <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              Trusted by 10,000+ students
-            </Badge>
-          </div>
-          
-          <div className="flex justify-center mb-12">
-            <LandingPageClient />
-          </div>
-          
-          {/* Stats Section */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-8 sm:mt-16 max-w-4xl mx-auto">
+        </div>
+      </section>
+
+      {/* Subject Scroll */}
+      <section className="py-8 border-y border-border/50 overflow-hidden">
+        <div className="flex gap-8 animate-moving-lines whitespace-nowrap">
+          {[...subjects, ...subjects, ...subjects].map((subject, i) => (
+            <span
+              key={`${subject}-${i}`}
+              className="text-foreground/40 text-lg font-medium"
+            >
+              {subject}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* Stats Bar */}
+      <section className="py-16 px-4">
+        <div className="container max-w-7xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-12 md:gap-20">
             {stats.map((stat) => (
-              <Card key={stat.label} className="bg-card/60 backdrop-blur-xl border border-white/20 text-center">
-                <CardContent className="p-3 sm:p-6">
-                  <stat.icon className="h-6 w-6 sm:h-8 sm:w-8 text-primary mx-auto mb-2" />
-                  <div className="text-lg sm:text-2xl font-bold text-foreground">{stat.value}</div>
-                  <div className="text-xs sm:text-sm text-foreground/60">{stat.label}</div>
-                </CardContent>
-              </Card>
+              <div key={stat.label} className="text-center">
+                <div className="font-headline text-4xl md:text-5xl font-bold text-primary mb-1">
+                  {stat.value}
+                </div>
+                <div className="text-foreground/50 text-sm uppercase tracking-wider">
+                  {stat.label}
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="relative z-10 py-16 sm:py-24 px-4">
+      {/* Bento Grid */}
+      <section className="py-20 px-4">
         <div className="container max-w-7xl mx-auto">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="font-headline text-3xl sm:text-4xl font-bold mb-4">
-              Everything You Need to Succeed
+          <div className="mb-16">
+            <h2 className="font-headline text-3xl md:text-5xl font-bold tracking-tight mb-4">
+              One platform.
+              <br />
+              <span className="text-foreground/50">Everything you need.</span>
             </h2>
-            <p className="text-lg sm:text-xl text-foreground/60 max-w-2xl mx-auto px-2">
-              Our comprehensive platform combines AI technology with proven study methods to maximize your AP exam performance.
-            </p>
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {features.map((feature) => (
-              <Card key={feature.title} className="bg-card/60 backdrop-blur-xl border border-white/20 hover:shadow-lg transition-all duration-300 group">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-                      <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                    </div>
-                    <CardTitle className="text-lg sm:text-xl">{feature.title}</CardTitle>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 auto-rows-[200px] gap-4">
+            {/* Large item */}
+            <div className="md:col-span-2 md:row-span-2 p-8 rounded-3xl bg-gradient-to-br from-blue-500/5 to-indigo-500/5 border border-border/50 hover:border-primary/30 transition-colors group">
+              <div className="h-full flex flex-col justify-between">
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+                    <GraduationCap className="w-6 h-6 text-primary" />
                   </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-sm sm:text-base text-foreground/70 leading-relaxed">{feature.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section className="relative z-10 py-16 sm:py-24 px-4 bg-primary/5">
-        <div className="container max-w-7xl mx-auto">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="font-headline text-3xl sm:text-4xl font-bold mb-4">
-              How AP Ally Works
-            </h2>
-            <p className="text-lg sm:text-xl text-foreground/60 max-w-2xl mx-auto px-2">
-              Our proven 4-step process helps you go from struggling student to AP exam success story.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            {steps.map((step, index) => (
-              <div key={step.step} className="relative">
-                <Card className="bg-card/60 backdrop-blur-xl border border-white/20 text-center h-full">
-                  <CardContent className="p-6 sm:p-8">
-                    <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-primary text-primary-foreground rounded-full text-xl sm:text-2xl font-bold mb-4 sm:mb-6 mx-auto">
-                      {step.step}
-                    </div>
-                    <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">{step.title}</h3>
-                    <p className="text-sm sm:text-base text-foreground/70 leading-relaxed">{step.description}</p>
-                  </CardContent>
-                </Card>
-                
-                {index < steps.length - 1 && (
-                  <>
-                    {/* Desktop arrow */}
-                    <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
-                      <ArrowRight className="h-8 w-8 text-primary/40" />
-                    </div>
-                    {/* Mobile arrow */}
-                    <div className="block lg:hidden flex justify-center my-4">
-                      <ArrowRight className="h-6 w-6 text-primary/40 rotate-90" />
-                    </div>
-                  </>
-                )}
+                  <h3 className="font-headline text-2xl md:text-3xl font-semibold mb-3">
+                    AI-Powered Learning
+                  </h3>
+                  <p className="text-foreground/60 text-lg max-w-md">
+                    Advanced algorithms analyze your strengths and weaknesses to create perfect study path
+                  </p>
+                </div>
+                <div className="inline-flex items-center gap-2 text-sm text-primary font-medium mt-4 group-hover:translate-x-2 transition-transform">
+                  <span>{bentoItems[0]?.highlight}</span>
+                  <ArrowUpRight className="w-4 h-4" />
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </div>
 
-      {/* CTA Section */}
-      <section className="relative z-10 py-16 sm:py-24 px-4">
-        <div className="container max-w-4xl mx-auto text-center">
-          <Card className="bg-gradient-to-r from-primary/10 to-primary/5 backdrop-blur-xl border border-primary/20">
-            <CardContent className="p-8 sm:p-12">
-              <h2 className="font-headline text-3xl sm:text-4xl font-bold mb-4">
-                Ready to Ace Your AP Exams?
-              </h2>
-              <p className="text-lg sm:text-xl text-foreground/70 mb-8 max-w-2xl mx-auto px-2">
-                Join thousands of students who have improved their AP scores with personalized AI tutoring. 
-                Start your journey to academic success today.
+            {/* Small items */}
+            <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border border-border/50 hover:border-emerald-500/30 transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">
+                <Clock className="w-5 h-5 text-emerald-600" />
+              </div>
+              <h3 className="font-headline text-xl font-semibold mb-2">
+                Save 40+ Hours
+              </h3>
+              <p className="text-foreground/50 text-sm">
+                Study smarter with targeted lessons
               </p>
-              
-              <div className="flex flex-col gap-4 justify-center items-center">
-                <div className="flex justify-center">
-                  <LandingPageClient />
+            </div>
+
+            <div className="p-6 rounded-3xl bg-gradient-to-br from-amber-500/5 to-orange-500/5 border border-border/50 hover:border-amber-500/30 transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center mb-4">
+                <TrendingUp className="w-5 h-5 text-amber-600" />
+              </div>
+              <h3 className="font-headline text-xl font-semibold mb-2">
+                Score Higher
+              </h3>
+              <p className="text-foreground/50 text-sm">
+                Average +1.2 point increase
+              </p>
+            </div>
+
+            {/* Medium items */}
+            <div className="md:col-span-2 p-8 rounded-3xl bg-gradient-to-br from-purple-500/5 to-pink-500/5 border border-border/50 hover:border-purple-500/30 transition-colors">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+                <div className="flex-1">
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center mb-4">
+                    <BookOpen className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <h3 className="font-headline text-xl font-semibold mb-2">
+                    Complete AP Coverage
+                  </h3>
+                  <p className="text-foreground/50">
+                    Every major AP subject with comprehensive curriculum
+                  </p>
                 </div>
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-foreground/60">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  <span>Free Forever • Monetized Through Ads</span>
+                <div className="flex flex-wrap gap-2">
+                  {bentoItems[3]?.subjects.map((s) => (
+                    <span
+                      key={s}
+                      className="px-3 py-1 text-xs font-medium rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-300"
+                    >
+                      {s}
+                    </span>
+                  ))}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+
+            <div className="md:col-span-3 p-8 rounded-3xl bg-gradient-to-br from-rose-500/5 to-red-500/5 border border-border/50 hover:border-rose-500/30 transition-colors">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                <div className="flex-1">
+                  <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center mb-4">
+                    <Sparkles className="w-5 h-5 text-rose-600" />
+                  </div>
+                  <h3 className="font-headline text-xl font-semibold mb-2">
+                    Instant Feedback Loop
+                  </h3>
+                  <p className="text-foreground/50">
+                    Get detailed explanations immediately after every question. Learn from mistakes in real-time.
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="font-headline text-4xl font-bold text-rose-600">
+                    0s
+                  </div>
+                  <div className="text-foreground/40 text-sm">
+                    Delay time
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
-      
+
+      {/* How It Works - Minimal */}
+      <section className="py-20 px-4 bg-primary/[0.02]">
+        <div className="container max-w-7xl mx-auto">
+          <div className="mb-16">
+            <h2 className="font-headline text-3xl md:text-5xl font-bold tracking-tight mb-4">
+              Four steps to
+              <br />
+              <span className="text-foreground/50">AP success.</span>
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {howItWorks.map((step, i) => (
+              <div key={step.title} className="relative">
+                <div className="sticky top-8">
+                  <div className="font-headline text-6xl md:text-7xl font-bold text-primary/10 absolute -top-8 -left-2">
+                    0{i + 1}
+                  </div>
+                  <h3 className="font-headline text-xl font-semibold mb-2 relative z-10">
+                    {step.title}
+                  </h3>
+                  <p className="text-foreground/60 mb-4 relative z-10">
+                    {step.description}
+                  </p>
+                  <span className="text-xs text-foreground/40 uppercase tracking-wider relative z-10">
+                    {step.duration}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 md:py-32 px-4">
+        <div className="container max-w-4xl mx-auto text-center">
+          <h2 className="font-headline text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+            Ready to dominate
+            <br />
+            <span className="bg-gradient-to-r from-primary via-indigo-600 to-primary bg-clip-text text-transparent">
+              your AP exams?
+            </span>
+          </h2>
+          <p className="text-xl text-foreground/60 mb-12 max-w-2xl mx-auto">
+            Join thousands of students who are already acing their APs.
+          </p>
+          <LandingPageClient />
+        </div>
+      </section>
+
       <Footer />
     </main>
   );

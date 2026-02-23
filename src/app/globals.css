@@ -89,7 +89,7 @@
 }
 
 @layer utilities {
-  @keyframes-moving-lines {
+  @keyframes moving-lines {
     0% {
       transform: translateX(0);
     }
@@ -98,7 +98,20 @@
     }
   }
 
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
   .animate-moving-lines {
     animation: moving-lines 40s linear infinite;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 1.5s ease-in-out infinite;
   }
 }

@@ -76,37 +76,40 @@ export function LandingPageClient() {
   if (isAuthenticated) {
     // Show "Start Studying" button if user is already logged in
     return (
-      <Button
-        size="lg"
+      <button
         onClick={handleStartStudying}
-        className="font-bold"
+        className="group relative px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 active:translate-y-0"
       >
-        <GraduationCap className="mr-2 h-5 w-5" />
-        Start Studying!
-      </Button>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_ease-in-out_infinite]" />
+        <span className="relative flex items-center gap-2">
+          <GraduationCap className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+          Start Studying
+          <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+        </span>
+      </button>
     );
   }
 
   return (
     <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
-      <Button
-        size="lg"
+      <button
         onClick={handleGetStarted}
         disabled={loading}
-        className="font-bold w-full sm:w-auto"
+        className="group relative px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
       >
-        Get Started for Free
-        <ArrowRight className="ml-2 h-5 w-5" />
-      </Button>
-      <Button
-        size="lg"
-        variant="outline"
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_ease-in-out_infinite]" />
+        <span className="relative flex items-center gap-2">
+          Get Started
+          <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+        </span>
+      </button>
+      <button
         onClick={handleSignIn}
         disabled={loading}
-        className="w-full sm:w-auto"
+        className="px-8 py-4 bg-transparent border-2 border-border text-foreground font-semibold rounded-xl transition-all duration-300 hover:bg-foreground hover:text-background hover:border-transparent active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Sign In
-      </Button>
+      </button>
     </div>
   );
 }
