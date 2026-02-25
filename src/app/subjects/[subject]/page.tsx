@@ -19,7 +19,7 @@ import { createSEOMetadata, getSubjectSEOData, generateStructuredData, generateB
 import { getSubjectBySlug, getAllSubjectSlugs } from '@/lib/subjectData';
 
 interface Props {
-  params: { subject: string };
+  params: Promise<{ subject: string }>;
 }
 
 export async function generateStaticParams() {
@@ -27,7 +27,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const subjectData = getSubjectBySlug(params.subject);
+  const { subject } = await params;
+  const subjectData = getSubjectBySlug(subject);
   if (!subjectData) return {};
   const seoData = getSubjectSEOData(subjectData.name);
   return createSEOMetadata({
@@ -44,8 +45,9 @@ const difficultyBadge: Record<string, string> = {
   'Very Hard': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
 };
 
-export default function SubjectPage({ params }: Props) {
-  const subjectData = getSubjectBySlug(params.subject);
+export default async function SubjectPage({ params }: Props) {
+  const { subject } = await params;
+  const subjectData = getSubjectBySlug(subject);
   if (!subjectData) notFound();
 
   const courseStructuredData = generateStructuredData('course', {
