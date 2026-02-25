@@ -1,4 +1,4 @@
-import { Mail, MapPin, ExternalLink, GraduationCap } from "lucide-react";
+import { Mail, MapPin, GraduationCap } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 
@@ -33,16 +33,22 @@ export function Footer() {
           {/* Mobile: Combined Links */}
           <div className="md:hidden grid grid-cols-2 gap-4 col-span-1">
             <div className="space-y-3">
-              <h4 className="font-semibold text-foreground text-sm">Quick Links</h4>
+              <h4 className="font-semibold text-foreground text-sm">AP Subjects</h4>
               <nav className="flex flex-col space-y-2">
-                <Link href="/dashboard" className="text-xs text-foreground/70 hover:text-primary transition-colors">
-                  Dashboard
+                <Link href="/subjects/ap-biology" className="text-xs text-foreground/70 hover:text-primary transition-colors">
+                  AP Biology
                 </Link>
-                <Link href="/practice-quiz" className="text-xs text-foreground/70 hover:text-primary transition-colors">
-                  Practice Quiz
+                <Link href="/subjects/ap-chemistry" className="text-xs text-foreground/70 hover:text-primary transition-colors">
+                  AP Chemistry
                 </Link>
-                <Link href="/help" className="text-xs text-foreground/70 hover:text-primary transition-colors">
-                  Help Center
+                <Link href="/subjects/ap-calculus-ab" className="text-xs text-foreground/70 hover:text-primary transition-colors">
+                  AP Calculus AB
+                </Link>
+                <Link href="/subjects/ap-us-history" className="text-xs text-foreground/70 hover:text-primary transition-colors">
+                  AP US History
+                </Link>
+                <Link href="/subjects/ap-psychology" className="text-xs text-foreground/70 hover:text-primary transition-colors">
+                  AP Psychology
                 </Link>
               </nav>
             </div>
@@ -55,8 +61,11 @@ export function Footer() {
                 <Link href="/terms-of-service" className="text-xs text-foreground/70 hover:text-primary transition-colors">
                   Terms of Service
                 </Link>
-                <a 
-                  href="mailto:support@ap-ally.com" 
+                <Link href="/cookie-policy" className="text-xs text-foreground/70 hover:text-primary transition-colors">
+                  Cookie Policy
+                </Link>
+                <a
+                  href="mailto:support@ap-ally.com"
                   className="text-xs text-foreground/70 hover:text-primary transition-colors"
                 >
                   Support
@@ -113,37 +122,34 @@ export function Footer() {
             </nav>
           </div>
 
-          {/* Desktop: Resources */}
+          {/* Desktop: AP Subjects */}
           <div className="space-y-4 hidden md:block">
-            <h4 className="font-semibold text-foreground">Resources</h4>
+            <h4 className="font-semibold text-foreground">AP Subjects</h4>
             <nav className="flex flex-col space-y-2">
-              <a 
-                href="https://apstudents.collegeboard.org/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-sm text-foreground/70 hover:text-primary transition-colors flex items-center gap-1"
-              >
-                College Board AP
-                <ExternalLink className="h-3 w-3" />
-              </a>
-              <a 
-                href="https://apcentral.collegeboard.org/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-sm text-foreground/70 hover:text-primary transition-colors flex items-center gap-1"
-              >
-                AP Central
-                <ExternalLink className="h-3 w-3" />
-              </a>
-              <Link href="/help" className="text-sm text-foreground/70 hover:text-primary transition-colors">
-                Help Center
+              <Link href="/subjects/ap-biology" className="text-sm text-foreground/70 hover:text-primary transition-colors">
+                AP Biology
               </Link>
-              <a 
-                href="mailto:feedback@ap-ally.com" 
-                className="text-sm text-foreground/70 hover:text-primary transition-colors"
-              >
-                Send Feedback
-              </a>
+              <Link href="/subjects/ap-chemistry" className="text-sm text-foreground/70 hover:text-primary transition-colors">
+                AP Chemistry
+              </Link>
+              <Link href="/subjects/ap-calculus-ab" className="text-sm text-foreground/70 hover:text-primary transition-colors">
+                AP Calculus AB
+              </Link>
+              <Link href="/subjects/ap-calculus-bc" className="text-sm text-foreground/70 hover:text-primary transition-colors">
+                AP Calculus BC
+              </Link>
+              <Link href="/subjects/ap-us-history" className="text-sm text-foreground/70 hover:text-primary transition-colors">
+                AP US History
+              </Link>
+              <Link href="/subjects/ap-psychology" className="text-sm text-foreground/70 hover:text-primary transition-colors">
+                AP Psychology
+              </Link>
+              <Link href="/subjects/ap-english-language" className="text-sm text-foreground/70 hover:text-primary transition-colors">
+                AP English Language
+              </Link>
+              <Link href="/subjects/ap-statistics" className="text-sm text-foreground/70 hover:text-primary transition-colors">
+                AP Statistics
+              </Link>
             </nav>
           </div>
         </div>

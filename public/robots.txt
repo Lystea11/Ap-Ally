@@ -1,23 +1,21 @@
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://ap-ally.com/sitemap.xml
-
-# Block crawling of admin and auth pages
+# Disallow private APIs and system paths
 Disallow: /api/
 Disallow: /admin/
 Disallow: /_next/
 Disallow: /auth/
 
-# Allow crawling of public pages
-Allow: /
-Allow: /dashboard
-Allow: /practice-quiz
-Allow: /subjects/
-Allow: /help
-Allow: /privacy-policy
-Allow: /terms-of-service
+# Disallow auth-gated pages (JS-only, no crawlable HTML)
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /practice-quiz
+Disallow: /practice-quiz/
+Disallow: /practice-quiz-free-response
+Disallow: /practice-quiz-free-response/
+Disallow: /privacy-settings
+Disallow: /privacy-settings/
 
-# Crawl delay for better server performance
-Crawl-delay: 1
+# Sitemap
+Sitemap: https://ap-ally.com/sitemap.xml

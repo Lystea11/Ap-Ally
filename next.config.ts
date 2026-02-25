@@ -19,18 +19,17 @@ const nextConfig: NextConfig = {
     ],
     formats: ['image/webp', 'image/avif'],
   },
-  // SEO optimizations
+  // SEO: never serve trailing-slash URLs
   trailingSlash: false,
   poweredByHeader: false,
   compress: true,
-  // Enable experimental features for better performance
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ['lucide-react'],
   },
-  // Redirects for SEO - www to non-www
   async redirects() {
     return [
+      // www → non-www canonical redirect
       {
         source: '/:path*',
         has: [
@@ -40,6 +39,33 @@ const nextConfig: NextConfig = {
           },
         ],
         destination: 'https://ap-ally.com/:path*',
+        permanent: true,
+      },
+      // Explicit trailing-slash redirects for routes where trailingSlash:false
+      // has been observed to return unexpected statuses in crawls.
+      {
+        source: '/onboarding/',
+        destination: '/onboarding',
+        permanent: true,
+      },
+      {
+        source: '/cookie-policy/',
+        destination: '/cookie-policy',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/',
+        destination: '/dashboard',
+        permanent: true,
+      },
+      {
+        source: '/practice-quiz/',
+        destination: '/practice-quiz',
+        permanent: true,
+      },
+      {
+        source: '/privacy-settings/',
+        destination: '/privacy-settings',
         permanent: true,
       },
     ];
